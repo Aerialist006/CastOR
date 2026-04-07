@@ -1,0 +1,120 @@
+{
+  "nav": {
+    "home": "Inicio",
+    "dashboard": "Dashboard",
+    "settings": "Configuracion"
+  },
+  "header": {
+    "subtitle": "Panel de control",
+    "project": "Proyectar"
+  },
+  "actions": {
+    "cast": "Proyectar",
+    "stopCast": "Detener"
+  },
+  "dashboard": {
+    "mediaLib": "Biblioteca de Medios",
+    "mediaSearch": "Buscar Medios...",
+
+    "bibleTitle": "Buscar en la Biblia",
+    "bibleBook": "Libro",
+    "bibleChapter": "Capitulo",
+    "bibleVerse": "Versiculo",
+    "bibleSearchButton": "Buscar",
+    "bibleQuick": "Escribe el pasaje...",
+
+    "verse": "verso",
+    "verses": "versos",
+
+    "videoURL": "URL del video",
+    "videoPlaceholder": "https://...",
+    "videoUp": "Subir Archivo",
+
+    "noteHeader": "Nueva Nota",
+    "noteSub": "Agrega el contenido de la nota...",
+    "noteAdd": "Agregar Nota",
+
+    "announcementHeader": "Nuevo Anuncio",
+    "announcementSub": "Agrega el contenido del anuncio...",
+    "announcementAdd": "Agregar anuncio",
+
+    "songButton": "Agregar una Cancion",
+
+    "bgImg": "Imagenes de fondo",
+
+    "preview": "Vista Previa",
+    "live": "En Vivo",
+    "goLive": "Transmitir",
+    "clear": "Limpiar",
+
+    "scheduleHeader": "Programa",
+    "scheduleSub": "Item",
+
+    "media": "Medios",
+    "mediaEmpty": "Sin archivos",
+    "mediaEmptyDesc": "Agrega archivos a tu biblioteca para usarlos en tu transmision.",
+
+    "song": "Cancion",
+    "note": "Nota",
+    "slide": "Presentacion",
+    "bible": "Biblia",
+    "announcement": "Anuncio"
+  },
+  "settings": {
+    "aspectRatio": "Relación de aspecto",
+    "aspectRatio169Desc": "Pantallas y proyectores modernos",
+    "aspectRatio43Desc": "Proyectores y pantallas antiguas",
+    "showVerseRef": "Mostrar referencia del versículo",
+    "showVerseRefDesc": "Mostrar \"Juan 3:16\" debajo del texto",
+    "lineHeight": "Interlineado",
+    "textAlign": "Alineación del texto",
+    "marginsTitle": "Márgenes",
+    "marginsDesc": "Espacio alrededor del texto en la ventana de presentación",
+    "marginTop": "Superior",
+    "marginBottom": "Inferior",
+    "marginLeft": "Izquierdo",
+    "marginRight": "Derecho",
+    "subtitle": "Administra las preferencias de tu aplicacion",
+    "tabDisplay": "Pantalla",
+    "tabBible": "Biblia",
+    "tabLanguage": "Idioma",
+    "displayTitle": "Configuracion de Pantalla",
+    "displayDesc": "Configura como se muestran los versiculos",
+    "versesDisplayed": "Versiculos a mostrar",
+    "versesDisplayedDesc": "Número de versiculos consecutivos a mostrar en los resultados",
+    "fontSize": "Tamano de fuente",
+    "fontSizeDesc": "Tamano del texto para la ventana de proyeccion",
+    "showVerseNumbers": "Mostrar números de versículo",
+    "showVerseNumbersDesc": "Mostrar los números junto al texto",
+    "castTitle": "Configuracion de Proyeccion",
+    "castDesc": "Configura la pantalla externa para proyectar",
+    "castMonitor": "Monitor de proyeccion",
+    "selectMonitor": "Seleccionar monitor",
+    "autoDetect": "Auto-detectar (monitor secundario)",
+    "castMonitorDesc": "Selecciona que monitor usar para la ventana de proyeccion",
+    "availableDisplays": "Pantallas disponibles",
+    "bibleTranslation": "Traduccion de la Biblia",
+    "languageTitle": "Idioma de la Interfaz",
+    "languageDesc": "Elige tu idioma preferido para la interfaz de la aplicacion",
+    "previewTitle": "Vista previa",
+    "previewDesc": "Se actualiza al cambiar la configuración",
+    "fontFamily": "Fuente",
+    "refTitle": "Referencia y versión",
+    "refDesc": "Controla cómo se muestra la referencia y la versión de la Biblia",
+    "showBibleVersion": "Mostrar versión de la Biblia",
+    "showBibleVersionDesc": "Mostrar \"KJV\" o \"RV1960\" junto a la referencia",
+    "refSyncSize": "Tamaño automático de referencia",
+    "refSyncSizeDesc": "Se escala automáticamente con el tamaño del versículo",
+    "refFontSize": "Tamaño de fuente de referencia",
+    "effectsTitle": "Efectos de texto",
+    "effectsDesc": "Mejora la legibilidad sobre fondos complejos o brillantes",
+    "textShadow": "Sombra de texto",
+    "textShadowDesc": "Sombra detrás del texto",
+    "textShadowBlur": "Radio de desenfoque",
+    "textShadowColor": "Color de sombra",
+    "textOutline": "Contorno de texto",
+    "textOutlineDesc": "Borde alrededor de cada letra",
+    "textOutlineWidth": "Grosor del contorno",
+    "textOutlineColor": "Color del contorno"
+  }
+}

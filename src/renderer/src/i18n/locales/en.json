@@ -1,0 +1,120 @@
+{
+  "nav": {
+    "home": "Home",
+    "dashboard": "Dashboard",
+    "settings": "Settings"
+  },
+  "header": {
+    "subtitle": "Control panel",
+    "project": "Project"
+  },
+  "actions": {
+    "cast": "Cast",
+    "stopCast": "Stop Cast"
+  },
+  "dashboard": {
+    "mediaLib": "Media Library",
+    "mediaSearch": "Search Media...",
+
+    "bibleTitle": "Search in the Bible",
+    "bibleBook": "Book",
+    "bibleChapter": "Chapter",
+    "bibleVerse": "Verse",
+    "bibleSearchButton": "Search",
+    "bibleQuick": "Type the verse...",
+
+    "verse": "verse",
+    "verses": "verses",
+
+    "videoURL": "Add Video URL",
+    "videoPlaceholder": "https://...",
+    "videoUp": "Upload File",
+
+    "noteHeader": "New Note",
+    "noteSub": "Enter note content...",
+    "noteAdd": "Add Note",
+
+    "announcementHeader": "New Announcement",
+    "announcementSub": "Enter announcement content...",
+    "announcementAdd": "Add Announcement",
+
+    "songButton": "Add Song",
+
+    "bgImg": "Background Images",
+
+    "preview": "Preview",
+    "live": "Live",
+    "goLive": "Go Live",
+    "clear": "Clear",
+
+    "scheduleHeader": "Schedule",
+    "scheduleSub": "Item",
+
+    "media": "Media",
+    "mediaEmpty": "No media yet",
+    "mediaEmptyDesc": "Add files to your media library to use them in your broadcast.",
+
+    "song": "Song",
+    "note": "Note",
+    "slide": "Slide",
+    "bible": "Bible",
+    "announcement": "Announcement"
+  },
+  "settings": {
+    "showVerseRef": "Show verse reference",
+    "showVerseRefDesc": "Show \"John 3:16\" below the verse text",
+    "lineHeight": "Line height",
+    "textAlign": "Text alignment",
+    "marginsTitle": "Margins",
+    "marginsDesc": "Padding around the text in the cast window",
+    "marginTop": "Top",
+    "marginBottom": "Bottom",
+    "marginLeft": "Left",
+    "marginRight": "Right",
+    "subtitle": "Manage your application preferences",
+    "tabDisplay": "Display",
+    "tabBible": "Bible",
+    "tabLanguage": "Language",
+    "displayTitle": "Display Settings",
+    "displayDesc": "Configure how verses are displayed",
+    "versesDisplayed": "Verses to display",
+    "versesDisplayedDesc": "Number of consecutive verses to show in search results",
+    "fontSize": "Font size",
+    "fontSizeDesc": "Text size for the cast display window",
+    "showVerseNumbers": "Show verse numbers",
+    "showVerseNumbersDesc": "Display verse numbers alongside the text",
+    "castTitle": "Cast Settings",
+    "castDesc": "Configure the external display for casting",
+    "castMonitor": "Cast monitor",
+    "selectMonitor": "Select monitor",
+    "autoDetect": "Auto-detect (secondary monitor)",
+    "castMonitorDesc": "Select which monitor to use for the fullscreen cast window",
+    "availableDisplays": "Available displays",
+    "bibleTranslation": "Bible Translation",
+    "languageTitle": "Interface Language",
+    "languageDesc": "Choose your preferred language for the application interface",
+    "previewTitle": "Live Preview",
+    "previewDesc": "Updates as you change settings below",
+    "fontFamily": "Font",
+    "refTitle": "Reference & Version",
+    "refDesc": "Control how the verse reference and Bible version appear",
+    "showBibleVersion": "Show Bible version",
+    "showBibleVersionDesc": "Show \"KJV\" or \"RV1960\" next to the reference",
+    "refSyncSize": "Auto-size reference",
+    "refSyncSizeDesc": "Automatically scale with the verse font size",
+    "refFontSize": "Reference font size",
+    "effectsTitle": "Text Effects",
+    "effectsDesc": "Improve legibility over bright or complex backgrounds",
+    "textShadow": "Text shadow",
+    "textShadowDesc": "Drop shadow behind the text",
+    "textShadowBlur": "Blur radius",
+    "textShadowColor": "Shadow color",
+    "textOutline": "Text outline",
+    "textOutlineDesc": "Stroke around each letter",
+    "textOutlineWidth": "Outline width",
+    "textOutlineColor": "Outline color",
+    "aspectRatio": "Screen ratio",
+    "aspectRatio169Desc": "Modern displays and projectors",
+    "aspectRatio43Desc": "Older projectors and screens"
+  }
+}
