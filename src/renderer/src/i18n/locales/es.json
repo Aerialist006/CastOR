@@ -38,6 +38,8 @@
     "announcementSub": "Agrega el contenido del anuncio...",
     "announcementAdd": "Agregar anuncio",
 
+    "songHeader": "Canciones",
+    "songView": "Vista",
     "songButton": "Agregar una Cancion",
 
     "bgImg": "Imagenes de fondo",
@@ -54,11 +56,17 @@
     "mediaEmpty": "Sin archivos",
     "mediaEmptyDesc": "Agrega archivos a tu biblioteca para usarlos en tu transmision.",
 
-    "song": "Cancion",
-    "note": "Nota",
-    "slide": "Presentacion",
+    "song": "Canciones",
+    "note": "Notas",
+    "slide": "Presentaciones",
     "bible": "Biblia",
-    "announcement": "Anuncio"
+    "video": "Videos",
+    "announcement": "Anuncios",
+    "background": "Fondos"
+  },
+  "schedule": {
+    "empty": "Nada en el programa",
+    "emptyDesc": "Agrega versículos o medios para construir tu presentación"
   },
   "settings": {
     "aspectRatio": "Relación de aspecto",
@@ -116,5 +124,41 @@
     "textOutlineDesc": "Borde alrededor de cada letra",
     "textOutlineWidth": "Grosor del contorno",
     "textOutlineColor": "Color del contorno"
+  },
+  "song": {
+    "intro": "Introducción",
+    "slide": "Diapositiva",
+    "prev": "Anterior",
+    "next": "Siguiente",
+    "addTitle": "Agregar canción",
+    "editTitle": "Editar canción",
+    "title": "Título",
+    "titlePlaceholder": "Amazing Grace",
+    "author": "Autor",
+    "authorPlaceholder": "John Newton",
+    "tone": "Tono / Clave",
+    "bpm": "BPM",
+    "content": "Letra y acordes",
+    "contentHint": "Usa [Título de sección] para las secciones, {&C} para acordes, {&1} para números Nashville.",
+    "save": "Guardar",
+    "discard": "Descartar",
+    "confirm": {
+      "saveTitle": "¿Guardar canción?",
+      "saveDesc": "Esto guardará la canción y la descargará como archivo.",
+      "discardTitle": "¿Descartar cambios?",
+      "discardDesc": "Todos los cambios no guardados se perderán.",
+      "closeTitle": "¿Cerrar sin guardar?",
+      "closeDesc": "Tienes cambios sin guardar. ¿Estás seguro de que deseas cerrar?"
+    },
+    "preview": "Vista previa",
+    "addToSchedule": "Agregar al programa",
+    "addAll": "Agregar todo",
+    "search": "Buscar canciones...",
+    "empty": "Sin canciones aún",
+    "noResults": "No se encontraron canciones"
+  },
+  "common": {
+    "cancel": "Cancelar",
+    "close": "Cerrar"
   }
 }

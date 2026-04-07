@@ -24,6 +24,11 @@ export interface Api {
   onLiveContentUpdate: (cb: (payload: unknown) => void) => () => void
   sendVerseDoubleClick: (verse: unknown) => void
   onVerseDoubleClick: (cb: (verse: unknown) => void) => () => void
+  songs: {
+    getAll: () => Promise<Song[]>
+    save: (song: Song) => Promise<Song>
+    delete: (id: string) => Promise<string>
+  }
 }
 
 declare global {

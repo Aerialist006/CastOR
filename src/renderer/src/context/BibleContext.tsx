@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react'
-import { parseBible } from '../lib/bibleParser'
-import { TRANSLATION_CONFIGS, BibleTranslation } from '../lib/bibleTypes'
+import { parseBible } from '../utils/bibleParser'
+import { TRANSLATION_CONFIGS, BibleTranslation } from '../types/bibleTypes'
 import { AppConfig, DEFAULT_CONFIG } from '../lib/appConfig'
 import { useAppConfig } from '../hooks/useAppConfig'
 

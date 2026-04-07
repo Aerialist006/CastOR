@@ -5,6 +5,7 @@ import icon from '../../resources/icon.png?asset'
 import { registerBibleIpc } from './ipcBible'
 import { registerConfigIpc, setCastWindowGetter } from './ipcConfig'
 import { registerCastIpc, getCastWindow } from './ipcCast'
+import { registerSongsIpc } from './ipcSongs'
 
 // ↓ hoisted so ipcMain handlers can reference it
 let mainWindow: BrowserWindow | null = null
@@ -50,6 +51,7 @@ app.whenReady().then(() => {
   registerBibleIpc()
   registerConfigIpc()
   registerCastIpc()
+  registerSongsIpc()
 
   app.on('browser-window-created', (_, window) => {
     optimizer.watchWindowShortcuts(window)

@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
-import type { BibleTranslation } from '../../lib/bibleTypes'
+import type { BibleTranslation } from '../../types/bibleTypes'
 import { Input } from '@/components/ui/input'
 
 interface Props {

@@ -1,5 +1,5 @@
 import { useRef, useEffect, useState } from 'react'
-import { cn } from '@/lib/utils'
+import { cn } from '@/utils/utils'
 import type { SceneItem } from '@/context/PresentationContext'
 import type { AppConfig } from '@/lib/appConfig'
 import { DEFAULT_CONFIG } from '@/lib/appConfig'
@@ -27,9 +27,14 @@ interface CastPreviewProps {
   className?: string
 }
 
+type CastSceneItem = SceneItem & {
+  showTitle?: boolean
+  subtitle?: string
+}
+
 export function CastPreview({
   content,
-  config = {}, 
+  config = {},
   isLive = false,
   showPlaceholder = false,
   className
@@ -43,17 +48,17 @@ export function CastPreview({
 
   useFontLoader(c.fontFamily)
 
-  // Re-run whenever REF_W changes (ratio toggle) so scale stays correct
   useEffect(() => {
     const el = wrapRef.current
     if (!el) return
+
     const obs = new ResizeObserver(([entry]) => {
       const { width, height } = entry.contentRect
-
       const scaleByW = width / REF_W
       const scaleByH = height / REF_H
-      setScale(Math.min(scaleByW, scaleByH)) // ← use whichever is the binding constraint
+      setScale(Math.min(scaleByW, scaleByH))
     })
+
     obs.observe(el)
     return () => obs.disconnect()
   }, [REF_W])
@@ -64,6 +69,11 @@ export function CastPreview({
       : showPlaceholder
         ? PLACEHOLDER_VERSE
         : null
+
+  const scene = content as CastSceneItem | null | undefined
+  const isSong = scene?.type === 'song'
+  const showSceneTitle =
+    scene?.showTitle ?? (!isSong && Boolean(scene?.title))
 
   const isEmpty = !verse && !content?.title && !content?.content
 
@@ -84,15 +94,18 @@ export function CastPreview({
   }
 
   const justifyContent =
-    c.textAlign === 'left' ? 'flex-start' : c.textAlign === 'right' ? 'flex-end' : 'center'
+    c.textAlign === 'left'
+      ? 'flex-start'
+      : c.textAlign === 'right'
+        ? 'flex-end'
+        : 'center'
 
   return (
     <div
       ref={wrapRef}
       className={cn(
-        // ↓ was hardcoded 'aspect-video', now respects ratio
         'relative w-full overflow-hidden rounded-lg bg-black',
-        ratio === '4:3' ? 'aspect-[4/3]' : 'aspect-video',
+        ratio === '4:3' ? 'aspect-4/3' : 'aspect-video',
         isLive && content
           ? 'border-2 border-red-600'
           : isLive
@@ -131,7 +144,7 @@ export function CastPreview({
               textAlign: 'center'
             }}
           >
-            {isLive ? 'Nothing live' : 'Select content to preview'}
+            {isLive ? '' : ''}
           </p>
         ) : verse ? (
           <>
@@ -143,7 +156,8 @@ export function CastPreview({
                 textAlign: c.textAlign,
                 color: 'white',
                 width: '100%',
-                marginBottom: c.showVerseRef || c.showBibleVersion ? c.fontSize * 0.5 : 0
+                marginBottom: c.showVerseRef || c.showBibleVersion ? c.fontSize * 0.5 : 0,
+                whiteSpace: 'pre-wrap'
               }}
             >
               {c.showVerseNumbers && (
@@ -190,7 +204,13 @@ export function CastPreview({
                 )}
 
                 {c.showVerseRef && c.showBibleVersion && (
-                  <span style={{ ...textBase, fontSize: refSize, color: 'rgba(255,255,255,0.3)' }}>
+                  <span
+                    style={{
+                      ...textBase,
+                      fontSize: refSize,
+                      color: 'rgba(255,255,255,0.3)'
+                    }}
+                  >
                     ·
                   </span>
                 )}
@@ -213,7 +233,7 @@ export function CastPreview({
           </>
         ) : (
           <>
-            {content?.title && (
+            {showSceneTitle && content?.title && (
               <p
                 style={{
                   ...textBase,
@@ -221,12 +241,30 @@ export function CastPreview({
                   textAlign: c.textAlign,
                   color: 'rgba(255,255,255,0.6)',
                   width: '100%',
-                  marginBottom: c.fontSize * 0.3
+                  marginBottom: scene?.subtitle || content?.content ? c.fontSize * 0.3 : 0,
+                  whiteSpace: 'pre-wrap'
                 }}
               >
                 {content.title}
               </p>
             )}
+
+            {scene?.subtitle && (
+              <p
+                style={{
+                  ...textBase,
+                  fontSize: c.fontSize * 0.32,
+                  textAlign: c.textAlign,
+                  color: 'rgba(255,255,255,0.45)',
+                  width: '100%',
+                  marginBottom: content?.content ? c.fontSize * 0.4 : 0,
+                  whiteSpace: 'pre-wrap'
+                }}
+              >
+                {scene.subtitle}
+              </p>
+            )}
+
             {content?.content && (
               <p
                 style={{
@@ -235,7 +273,8 @@ export function CastPreview({
                   lineHeight: c.lineHeight,
                   textAlign: c.textAlign,
                   color: 'white',
-                  width: '100%'
+                  width: '100%',
+                  whiteSpace: 'pre-wrap'
                 }}
               >
                 {content.content}

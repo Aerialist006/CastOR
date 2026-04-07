@@ -6,18 +6,25 @@ import React, {
   useEffect,
   ReactNode
 } from 'react'
-import type { VerseData } from '../lib/bibleTypes'
+import type { VerseData } from '../types/bibleTypes'
 import { useBibleContext } from './BibleContext'
+import { SongVerseGroup } from '@/types/song'
 
 export type SceneType = 'bible' | 'song' | 'note' | 'announcement' | 'media'
 
+// Add these to the existing SceneItem interface — keep everything else as-is
 export interface SceneItem {
   id: string
   type: SceneType
   title: string
-  content: string
-  verses?: VerseData[]
-  mediaUrl?: string
+  content?: string
+  verses?: VerseData[]   // from '../../types/bibleTypes' — already imported
+  // song-specific
+  songId?: string
+  songGroups?: SongVerseGroup[]  // import from '@/types/song'
+  showTitle?: boolean
+  subtitle?: string
+  navIndex?: number  // flat slide cursor for jump sync
 }
 
 export interface PresentationState {

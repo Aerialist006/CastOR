@@ -106,9 +106,7 @@ export default function CastWindow() {
       // 0.35 instead of 0.15 — actually visible on a dark screen
       <p
         style={{ ...textBase, fontSize: 48, color: 'rgba(255,255,255,0.35)', textAlign: 'center' }}
-      >
-        Waiting for content…
-      </p>
+      ></p>
     )
   } else if (content.type === 'bible' && content.verses?.length) {
     const verse = content.verses[verseIdx] ?? content.verses[0]

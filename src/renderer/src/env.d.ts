@@ -14,5 +14,10 @@ interface Window {
     castWindowClosed: (cb: () => void) => () => void
     castWindowReady: () => void
     onCastWindowReady: (cb: () => void) => () => void
+    songs: {
+      getAll: () => Promise<Song[]>
+      save: (song: Song) => Promise<Song>
+      delete: (id: string) => Promise<string>
+    }
   }
 }

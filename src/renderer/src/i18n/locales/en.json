@@ -38,6 +38,8 @@
     "announcementSub": "Enter announcement content...",
     "announcementAdd": "Add Announcement",
 
+    "songHeader": "Songs",
+    "songView": "View",
     "songButton": "Add Song",
 
     "bgImg": "Background Images",
@@ -54,11 +56,13 @@
     "mediaEmpty": "No media yet",
     "mediaEmptyDesc": "Add files to your media library to use them in your broadcast.",
 
-    "song": "Song",
-    "note": "Note",
-    "slide": "Slide",
+    "song": "Songs",
+    "note": "Notes",
+    "slide": "Slides",
     "bible": "Bible",
-    "announcement": "Announcement"
+    "video": "Videos",
+    "announcement": "Announcements",
+    "background": "Backgrounds"
   },
   "settings": {
     "showVerseRef": "Show verse reference",
@@ -116,5 +120,45 @@
     "aspectRatio": "Screen ratio",
     "aspectRatio169Desc": "Modern displays and projectors",
     "aspectRatio43Desc": "Older projectors and screens"
+  },
+  "schedule": {
+    "empty": "No items scheduled",
+    "emptyDesc": "Add verses or media to build your presentation"
+  },
+  "song": {
+     "intro": "Intro",
+    "slide": "Slide",
+    "prev": "Previous",
+    "next": "Next",
+    "addTitle": "Add Song",
+    "editTitle": "Edit Song",
+    "title": "Title",
+    "titlePlaceholder": "Amazing Grace",
+    "author": "Author",
+    "authorPlaceholder": "John Newton",
+    "tone": "Tone / Key",
+    "bpm": "BPM",
+    "content": "Lyrics & Chords",
+    "contentHint": "Use [Verse Title] for sections, {&C} for chords, {&1} for Nashville numbers.",
+    "save": "Save",
+    "discard": "Discard",
+    "confirm": {
+      "saveTitle": "Save song?",
+      "saveDesc": "This will save the song and download it as a file.",
+      "discardTitle": "Discard changes?",
+      "discardDesc": "All unsaved changes will be lost.",
+      "closeTitle": "Close without saving?",
+      "closeDesc": "You have unsaved changes. Are you sure you want to close?"
+    },
+    "preview": "Preview song",
+    "addToSchedule": "Add to schedule",
+    "addAll": "Add all",
+    "search": "Search songs...",
+    "empty": "No songs yet",
+    "noResults": "No songs found"
+  },
+  "common": {
+    "cancel": "Cancel",
+    "close": "Close"
   }
 }

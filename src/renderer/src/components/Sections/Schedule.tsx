@@ -1,39 +1,40 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { 
-  Play, 
-  SkipBack, 
-  SkipForward, 
-  GripVertical, 
-  X, 
-  BookOpen, 
-  Music, 
+import {
+  Play,
+  SkipBack,
+  SkipForward,
+  GripVertical,
+  X,
+  BookOpen,
+  Music,
   FileText,
   Megaphone,
   Image as ImageIcon,
-  Trash2
+  Trash2,
+  FolderOpen
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import {
-  Empty,
-  EmptyHeader,
-  EmptyMedia,
-  EmptyTitle,
-  EmptyDescription,
-} from '@/components/ui/empty'
-import { FolderOpen } from 'lucide-react'
+import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from '@/components/ui/empty'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { usePresentationContext, SceneItem, SceneType } from '@/context/PresentationContext'
-import { cn } from '@/lib/utils'
+import { usePresentationContext, type SceneItem, type SceneType } from '@/context/PresentationContext'
+import { SongDetailPanel } from '@/components/Songs/SongDetailPanel'
+import { cn } from '@/utils/utils'
+import type { Song } from '@/types/song'
 
-// Icon mapping for scene types
 const sceneTypeIcons: Record<SceneType, React.ElementType> = {
   bible: BookOpen,
   song: Music,
   note: FileText,
   announcement: Megaphone,
-  media: ImageIcon,
+  media: ImageIcon
+}
+
+interface ScheduleProps {
+  selectedSong?: Song | null
+  onSongClose?: () => void
+  onSongItemClick?: (item: SceneItem) => void
 }
 
 interface ScheduleItemProps {
@@ -47,23 +48,25 @@ interface ScheduleItemProps {
   onDrop: (index: number) => void
   isDragging: boolean
   dragOverIndex: number | null
+  onSongItemClick?: (item: SceneItem) => void
 }
 
-function ScheduleItem({ 
-  item, 
-  index, 
-  isActive, 
-  onSelect, 
+function ScheduleItem({
+  item,
+  index,
+  isActive,
+  onSelect,
   onRemove,
   onDragStart,
   onDragOver,
   onDrop,
   isDragging,
-  dragOverIndex
+  dragOverIndex,
+  onSongItemClick
 }: ScheduleItemProps) {
   const Icon = sceneTypeIcons[item.type]
   const isDropTarget = dragOverIndex === index
-  
+
   return (
     <div
       draggable
@@ -81,31 +84,33 @@ function ScheduleItem({
         onDrop(index)
       }}
       onDragEnd={() => onDrop(-1)}
-      onClick={onSelect}
+      onClick={() => {
+        onSelect()
+        if (item.type === 'song') onSongItemClick?.(item)
+      }}
       className={cn(
         'group flex items-center gap-2 px-2 py-2 rounded-md cursor-pointer transition-all',
         'border border-transparent',
-        isActive 
-          ? 'bg-primary/10 border-primary/50 text-primary' 
+        isActive
+          ? 'bg-primary/10 border-primary/50 text-primary'
           : 'hover:bg-muted/50',
         isDragging && 'opacity-50',
         isDropTarget && 'border-primary border-dashed bg-primary/5'
       )}
     >
-      {/* Drag handle */}
       <div className="cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground">
         <GripVertical className="h-4 w-4" />
       </div>
-      
-      {/* Icon */}
-      <div className={cn(
-        'flex items-center justify-center h-6 w-6 rounded',
-        isActive ? 'bg-primary/20' : 'bg-muted'
-      )}>
+
+      <div
+        className={cn(
+          'flex items-center justify-center h-6 w-6 rounded shrink-0',
+          isActive ? 'bg-primary/20' : 'bg-muted'
+        )}
+      >
         <Icon className="h-3.5 w-3.5" />
       </div>
-      
-      {/* Content */}
+
       <div className="flex-1 min-w-0">
         <p className="text-sm font-medium truncate">{item.title}</p>
         {item.verses && item.verses.length > 1 && (
@@ -114,8 +119,7 @@ function ScheduleItem({
           </p>
         )}
       </div>
-      
-      {/* Remove button */}
+
       <Button
         variant="ghost"
         size="icon"
@@ -131,7 +135,7 @@ function ScheduleItem({
   )
 }
 
-const Schedule = () => {
+const Schedule = ({ selectedSong, onSongClose, onSongItemClick }: ScheduleProps) => {
   const { t } = useTranslation()
   const {
     schedule,
@@ -146,9 +150,13 @@ const Schedule = () => {
     previewContent
   } = usePresentationContext()
 
-  // Drag and drop state
+  const [tabValue, setTabValue] = useState('schedule')
   const [dragIndex, setDragIndex] = useState<number | null>(null)
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null)
+
+  useEffect(() => {
+    if (selectedSong) setTabValue('media')
+  }, [selectedSong])
 
   const handleDragStart = useCallback((index: number) => {
     setDragIndex(index)
@@ -170,7 +178,7 @@ const Schedule = () => {
 
   return (
     <section className="lg:w-1/5 h-full border-b p-4 shrink-0 flex flex-col gap-3">
-      <Tabs defaultValue="schedule" className="flex flex-col flex-1 min-h-0">
+      <Tabs value={tabValue} onValueChange={setTabValue} className="flex flex-col flex-1 min-h-0">
         <TabsList className="w-full shrink-0">
           <TabsTrigger value="schedule" className="flex-1">
             {t('dashboard.scheduleHeader')}
@@ -180,11 +188,9 @@ const Schedule = () => {
           </TabsTrigger>
         </TabsList>
 
-        {/* Schedule tab */}
         <TabsContent value="schedule" className="flex-1 flex flex-col min-h-0 mt-2">
           {schedule.length > 0 ? (
             <>
-              {/* Schedule header */}
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs text-muted-foreground">
                   {schedule.length} {schedule.length === 1 ? 'item' : 'items'}
@@ -196,11 +202,10 @@ const Schedule = () => {
                   onClick={clearSchedule}
                 >
                   <Trash2 className="h-3 w-3 mr-1" />
-                  Clear
+                  {t('dashboard.clear')}
                 </Button>
               </div>
-              
-              {/* Schedule items */}
+
               <ScrollArea className="flex-1 min-h-0 -mx-1 px-1">
                 <div className="flex flex-col gap-1">
                   {schedule.map((item, index) => (
@@ -216,6 +221,7 @@ const Schedule = () => {
                       onDrop={handleDrop}
                       isDragging={dragIndex === index}
                       dragOverIndex={dragOverIndex}
+                      onSongItemClick={onSongItemClick}
                     />
                   ))}
                 </div>
@@ -228,34 +234,31 @@ const Schedule = () => {
                   <EmptyMedia variant="icon">
                     <FolderOpen />
                   </EmptyMedia>
-                  <EmptyTitle>No items scheduled</EmptyTitle>
-                  <EmptyDescription>
-                    Add verses or media to build your presentation
-                  </EmptyDescription>
+                  <EmptyTitle>{t('schedule.empty')}</EmptyTitle>
+                  <EmptyDescription>{t('schedule.emptyDesc')}</EmptyDescription>
                 </EmptyHeader>
               </Empty>
             </div>
           )}
-          
-          {/* Navigation controls */}
+
           <div className="flex justify-center gap-2 pt-3 border-t mt-3">
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               size="lg"
               disabled={schedule.length === 0}
               onClick={skipLeft}
             >
               <SkipBack className="h-4 w-4" />
             </Button>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               size="lg"
               disabled={schedule.length === 0}
               onClick={skipRight}
             >
               <SkipForward className="h-4 w-4" />
             </Button>
-            <Button 
+            <Button
               size="lg"
               disabled={!previewContent}
               onClick={goLive}
@@ -267,17 +270,22 @@ const Schedule = () => {
           </div>
         </TabsContent>
 
-        {/* Media tab */}
-        <TabsContent value="media" className="flex-1 flex items-center justify-center min-h-0">
-          <Empty>
-            <EmptyHeader>
-              <EmptyMedia variant="icon">
-                <FolderOpen />
-              </EmptyMedia>
-              <EmptyTitle>{t('dashboard.mediaEmpty')}</EmptyTitle>
-              <EmptyDescription>{t('dashboard.mediaEmptyDesc')}</EmptyDescription>
-            </EmptyHeader>
-          </Empty>
+        <TabsContent value="media" className="flex-1 flex min-h-0 mt-2">
+          {selectedSong ? (
+            <SongDetailPanel song={selectedSong} onClose={() => onSongClose?.()} />
+          ) : (
+            <div className="flex-1 flex items-center justify-center">
+              <Empty>
+                <EmptyHeader>
+                  <EmptyMedia variant="icon">
+                    <Music />
+                  </EmptyMedia>
+                  <EmptyTitle>{t('dashboard.mediaEmpty')}</EmptyTitle>
+                  <EmptyDescription>{t('dashboard.mediaEmptyDesc')}</EmptyDescription>
+                </EmptyHeader>
+              </Empty>
+            </div>
+          )}
         </TabsContent>
       </Tabs>
     </section>
