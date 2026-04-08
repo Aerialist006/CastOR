@@ -1,14 +1,23 @@
-import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react'
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  ReactNode,
+  useCallback
+} from 'react'
 import { parseBible } from '../utils/bibleParser'
-import { TRANSLATION_CONFIGS, BibleTranslation } from '../types/bibleTypes'
+import { TRANSLATION_CONFIGS, BibleTranslation } from '../types/bible'
 import { AppConfig, DEFAULT_CONFIG } from '../lib/appConfig'
 import { useAppConfig } from '../hooks/useAppConfig'
+import type { BackgroundConfig } from '@/types/background' // ADD
 
 interface BibleContextValue {
   activeBible: BibleTranslation | undefined
   isLoading: boolean
   config: AppConfig
   setConfig: (partial: Partial<AppConfig>) => void
+  updateBackground: (bg: BackgroundConfig) => void // ADD
 }
 
 const BibleContext = createContext<BibleContextValue>({
@@ -16,6 +25,7 @@ const BibleContext = createContext<BibleContextValue>({
   isLoading: false,
   config: DEFAULT_CONFIG,
   setConfig: () => {},
+  updateBackground: () => {} // ADD
 })
 
 export function BibleProvider({ children }: { children: ReactNode }) {
@@ -26,18 +36,24 @@ export function BibleProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const cfg = TRANSLATION_CONFIGS.find((t) => t.id === config.activeBibleId)
     if (!cfg) return
-
     setIsLoading(true)
     setActiveBible(undefined)
-
     parseBible(cfg.filename, cfg.id, cfg.name, cfg.abbreviation, cfg.language)
       .then(setActiveBible)
       .catch(console.error)
       .finally(() => setIsLoading(false))
   }, [config.activeBibleId])
 
+  // ADD — updates background in config, persists, and broadcasts to CastWindow
+  const updateBackground = useCallback(
+    (bg: BackgroundConfig) => {
+      setConfig({ background: bg }) // setConfig handles save + broadcast automatically
+    },
+    [setConfig]
+  )
+
   return (
-    <BibleContext.Provider value={{ activeBible, isLoading, config, setConfig }}>
+    <BibleContext.Provider value={{ activeBible, isLoading, config, setConfig, updateBackground }}>
       {children}
     </BibleContext.Provider>
   )

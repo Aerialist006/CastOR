@@ -4,27 +4,29 @@ import React, {
   useState,
   useCallback,
   useEffect,
+  useRef,
   ReactNode
 } from 'react'
-import type { VerseData } from '../types/bibleTypes'
+import type { VerseData } from '../types/bible'
 import { useBibleContext } from './BibleContext'
 import { SongVerseGroup } from '@/types/song'
+import type { FoldbackPayload } from '@/types/foldback'
 
 export type SceneType = 'bible' | 'song' | 'note' | 'announcement' | 'media'
 
-// Add these to the existing SceneItem interface — keep everything else as-is
 export interface SceneItem {
   id: string
   type: SceneType
   title: string
   content?: string
-  verses?: VerseData[]   // from '../../types/bibleTypes' — already imported
-  // song-specific
+  verses?: VerseData[]
   songId?: string
-  songGroups?: SongVerseGroup[]  // import from '@/types/song'
+  songGroups?: SongVerseGroup[]
   showTitle?: boolean
   subtitle?: string
-  navIndex?: number  // flat slide cursor for jump sync
+  navIndex?: number
+  tone?: string
+  originalTone?: string
 }
 
 export interface PresentationState {
@@ -33,9 +35,11 @@ export interface PresentationState {
   previewContent: SceneItem | null
   liveContent: SceneItem | null
   castWindowOpen: boolean
+  foldbackWindowOpen: boolean
 }
 
 interface PresentationContextValue extends PresentationState {
+  setLiveContent: (content: SceneItem | null) => void
   addToSchedule: (item: SceneItem) => void
   removeFromSchedule: (id: string) => void
   reorderSchedule: (fromIndex: number, toIndex: number) => void
@@ -50,6 +54,7 @@ interface PresentationContextValue extends PresentationState {
   openCastWindow: () => void
   closeCastWindow: () => void
   setCastWindowOpen: (open: boolean) => void
+  broadcastFoldbackContent: (payload: FoldbackPayload) => void
 }
 
 const PresentationContext = createContext<PresentationContextValue | null>(null)
@@ -57,6 +62,30 @@ const PresentationContext = createContext<PresentationContextValue | null>(null)
 let idCounter = 0
 export function generateId(): string {
   return `scene-${Date.now()}-${++idCounter}`
+}
+
+// ── Defined outside component so it's stable and has no hook dependencies ──
+function toFoldbackScene(item: SceneItem | null | undefined): FoldbackPayload['current'] {
+  if (!item) return null
+  if (item.type === 'song') {
+    const group = item.songGroups?.[0]
+    return {
+      type: 'song',
+      verseTitle: group?.title ?? item.title,
+      // Each slide's rawText preserves chord tokens; fall back to plain text
+      rawLines: group?.slides.map((s) => s.rawText ?? s.text) ?? item.content?.split('\n') ?? [],
+      cleanText: group?.slides.map((s) => s.text).join('\n') ?? item.content ?? ''
+    }
+  }
+  if (item.type === 'bible') {
+    return {
+      type: 'bible',
+      reference: item.title,
+      cleanText: item.content ?? '',
+      rawLines: item.content?.split('\n') ?? []
+    }
+  }
+  return { type: 'blank' }
 }
 
 export function PresentationProvider({ children }: { children: ReactNode }) {
@@ -67,37 +96,95 @@ export function PresentationProvider({ children }: { children: ReactNode }) {
   const [previewContent, setPreviewContentState] = useState<SceneItem | null>(null)
   const [liveContent, setLiveContent] = useState<SceneItem | null>(null)
   const [castWindowOpen, setCastWindowOpen] = useState(false)
+  const [foldbackWindowOpen, setFoldbackWindowOpen] = useState(false)
+
+  // ── Refs: always-fresh values for IPC callbacks ───────────────────────────
+  const liveContentRef = useRef(liveContent)
+  const configRef = useRef(config)
+  const lastFoldbackPayloadRef = useRef<FoldbackPayload | null>(null)
 
   useEffect(() => {
+    liveContentRef.current = liveContent
+  }, [liveContent])
+  useEffect(() => {
+    configRef.current = config
+  }, [config])
+
+  // ── Cast window ready → re-push live content ──────────────────────────────
+  useEffect(() => {
     const unsub = window.api?.onCastWindowReady?.(() => {
-      window.api?.broadcastLiveContent?.({ content: liveContent, config })
+      window.api?.broadcastLiveContent?.({
+        content: liveContentRef.current,
+        config: configRef.current
+      })
     })
     return () => unsub?.()
-  }, [liveContent, config])
-
-  // ── Cast window ─────────────────────────────────────────────
-  const openCastWindow = useCallback(() => {
-    window.api?.openCastWindow?.()
-    setCastWindowOpen(true)
-    // The new window needs ~400ms to mount and register its IPC listener.
-    // Then push the current state so it doesn't sit blank.
-    setTimeout(() => {
-      window.api?.broadcastLiveContent?.({ content: liveContent, config })
-    }, 400)
-  }, [liveContent, config]) // ← depend on current live content
-
-  const closeCastWindow = useCallback(() => {
-    window.api?.closeCastWindow?.()
-    setCastWindowOpen(false)
   }, [])
 
-  // Listen for cast window being closed from OS (user closes it directly)
+  // ── Foldback window signals ───────────────────────────────────────────────
+  useEffect(() => {
+    const unsubReady = window.api?.onFoldbackWindowReady?.(() => {
+      setFoldbackWindowOpen(true)
+      if (lastFoldbackPayloadRef.current) {
+        window.api?.broadcastFoldbackContent?.(lastFoldbackPayloadRef.current)
+      }
+    })
+    const unsubClosed = window.api?.onFoldbackWindowClosed?.(() => setFoldbackWindowOpen(false))
+    return () => {
+      unsubReady?.()
+      unsubClosed?.()
+    }
+  }, [])
+
+  // ── Cast window closed from OS ────────────────────────────────────────────
   useEffect(() => {
     const unsub = window.api?.castWindowClosed?.(() => setCastWindowOpen(false))
     return () => unsub?.()
   }, [])
 
-  // ── Schedule ────────────────────────────────────────────────
+  // ── Cast window open/close ────────────────────────────────────────────────
+  const openCastWindow = useCallback(() => {
+    window.api?.openCastWindow?.()
+    setCastWindowOpen(true)
+
+    if (configRef.current.foldbackEnabled) {
+      window.api?.openFoldbackWindow?.()
+    }
+
+    setTimeout(() => {
+      window.api?.broadcastLiveContent?.({
+        content: liveContentRef.current,
+        config: configRef.current
+      })
+    }, 400)
+  }, [])
+
+  const closeCastWindow = useCallback(() => {
+    window.api?.closeCastWindow?.()
+    setCastWindowOpen(false)
+
+    if (configRef.current.foldbackEnabled) {
+      window.api?.closeFoldbackWindow?.()
+    }
+  }, [])
+
+  // ── Foldback broadcast — caches payload for ready-handler replay ──────────
+  const broadcastFoldbackContent = useCallback((payload: FoldbackPayload) => {
+    lastFoldbackPayloadRef.current = payload
+    window.api?.broadcastFoldbackContent?.(payload)
+  }, [])
+
+  // ── Re-broadcast when config changes ─────────────────────────────────────
+  useEffect(() => {
+    if (liveContentRef.current && castWindowOpen) {
+      window.api?.broadcastLiveContent?.({
+        content: liveContentRef.current,
+        config: configRef.current
+      })
+    }
+  }, [config, castWindowOpen]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Schedule ──────────────────────────────────────────────────────────────
   const addToSchedule = useCallback((item: SceneItem) => {
     setSchedule((prev) => [...prev, item])
   }, [])
@@ -137,7 +224,7 @@ export function PresentationProvider({ children }: { children: ReactNode }) {
     setPreviewContentState(null)
   }, [])
 
-  // ── Navigation ──────────────────────────────────────────────
+  // ── Navigation ────────────────────────────────────────────────────────────
   const skipLeft = useCallback(() => {
     if (!schedule.length) return
     setCurrentSceneIndex((prev) => {
@@ -160,13 +247,16 @@ export function PresentationProvider({ children }: { children: ReactNode }) {
     (index: number) => {
       if (index >= 0 && index < schedule.length) {
         setCurrentSceneIndex(index)
-        setPreviewContentState(schedule[index])
+        const item = schedule[index]
+        if (item.type !== 'song') {
+          setPreviewContentState(item)
+        }
       }
     },
     [schedule]
   )
 
-  // ── Preview ─────────────────────────────────────────────────
+  // ── Preview ───────────────────────────────────────────────────────────────
   const setPreviewContent = useCallback(
     (content: SceneItem | null) => {
       setPreviewContentState(content)
@@ -188,37 +278,37 @@ export function PresentationProvider({ children }: { children: ReactNode }) {
     })
   }, [])
 
-  // ── Live ────────────────────────────────────────────────────
-  const broadcast = useCallback(
-    (content: SceneItem | null) => {
-      window.api?.broadcastLiveContent?.({ content, config })
-    },
-    [config]
-  )
+  // ── Live ──────────────────────────────────────────────────────────────────
+  const broadcast = useCallback((content: SceneItem | null) => {
+    window.api?.broadcastLiveContent?.({ content, config: configRef.current })
+  }, [])
 
   const goLive = useCallback(() => {
     if (!previewContent) return
     setLiveContent(previewContent)
     broadcast(previewContent)
-  }, [previewContent, broadcast])
+
+    const nextItem = schedule[currentSceneIndex + 1] ?? null
+    broadcastFoldbackContent({
+      current: toFoldbackScene(previewContent),
+      next: toFoldbackScene(nextItem)
+    })
+  }, [previewContent, broadcast, broadcastFoldbackContent, schedule, currentSceneIndex])
 
   const clearLive = useCallback(() => {
     setLiveContent(null)
     broadcast(null)
-  }, [broadcast])
+    broadcastFoldbackContent({ current: { type: 'blank' }, next: null })
+  }, [broadcast, broadcastFoldbackContent])
 
-  // Re-broadcast when config changes so cast window reflects new settings live
-  useEffect(() => {
-    if (liveContent && castWindowOpen) broadcast(liveContent)
-  }, [config, castWindowOpen]) // eslint-disable-line react-hooks/exhaustive-deps
-
-  // ── Context value ───────────────────────────────────────────
+  // ── Context value ─────────────────────────────────────────────────────────
   const value: PresentationContextValue = {
     schedule,
     currentSceneIndex,
     previewContent,
     liveContent,
     castWindowOpen,
+    foldbackWindowOpen,
     addToSchedule,
     removeFromSchedule,
     reorderSchedule,
@@ -232,7 +322,9 @@ export function PresentationProvider({ children }: { children: ReactNode }) {
     clearLive,
     openCastWindow,
     closeCastWindow,
-    setCastWindowOpen
+    setCastWindowOpen,
+    setLiveContent,
+    broadcastFoldbackContent
   }
 
   return <PresentationContext.Provider value={value}>{children}</PresentationContext.Provider>

@@ -1,10 +1,10 @@
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ChevronDown, ChevronUp, Plus, Eye } from 'lucide-react'
-import { useBibleContext } from '../../context/BibleContext'
-import { usePresentationContext, generateId } from '../../context/PresentationContext'
+import { useBibleContext } from '../../../context/BibleContext'
+import { usePresentationContext, generateId } from '../../../context/PresentationContext'
 import { BibleSearchBar } from './BibleSearchBar'
-import type { VerseData } from '../../types/bibleTypes'
+import type { VerseData } from '../../../types/bible'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { ScrollArea } from '@/components/ui/scroll-area'
@@ -16,12 +16,7 @@ import {
   SelectTrigger,
   SelectValue
 } from '@/components/ui/select'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger
-} from '@/components/ui/tooltip'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 
 interface VerseCardProps {
   v: VerseData
@@ -31,18 +26,16 @@ interface VerseCardProps {
 
 function VerseCard({ v, onAddToSchedule, onPreview }: VerseCardProps) {
   return (
-    <div className="group relative rounded-md border border-border bg-card px-3 py-2 hover:border-primary/50 transition-colors">
+    <div
+      className="group relative rounded-md border border-border bg-card px-3 py-2 hover:border-primary/50 transition-colors"
+      onDoubleClick={() => onPreview(v)}
+    >
       {/* Action buttons in top right */}
       <div className="absolute top-1 right-1 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
         <TooltipProvider delayDuration={300}>
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-6 w-6"
-                onClick={() => onPreview(v)}
-              >
+              <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => onPreview(v)}>
                 <Eye className="h-3.5 w-3.5" />
               </Button>
             </TooltipTrigger>
@@ -51,7 +44,7 @@ function VerseCard({ v, onAddToSchedule, onPreview }: VerseCardProps) {
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
-        
+
         <TooltipProvider delayDuration={300}>
           <Tooltip>
             <TooltipTrigger asChild>
@@ -70,7 +63,7 @@ function VerseCard({ v, onAddToSchedule, onPreview }: VerseCardProps) {
           </Tooltip>
         </TooltipProvider>
       </div>
-      
+
       <p className="mb-0.5 text-xs font-semibold text-muted-foreground">
         {v.book} {v.chapter}:{v.verse}
       </p>
@@ -137,18 +130,19 @@ export function BiblePanel() {
   // Add all displayed verses to schedule as a group
   const handleAddAllToSchedule = () => {
     if (results.length === 0) return
-    
+
     const firstVerse = results[0]
     const lastVerse = results[results.length - 1]
-    const verseRange = results.length > 1 
-      ? `${firstVerse.book} ${firstVerse.chapter}:${firstVerse.verse}-${lastVerse.verse}`
-      : `${firstVerse.book} ${firstVerse.chapter}:${firstVerse.verse}`
-    
+    const verseRange =
+      results.length > 1
+        ? `${firstVerse.book} ${firstVerse.chapter}:${firstVerse.verse}-${lastVerse.verse}`
+        : `${firstVerse.book} ${firstVerse.chapter}:${firstVerse.verse}`
+
     addToSchedule({
       id: generateId(),
       type: 'bible',
       title: verseRange,
-      content: results.map(v => v.text).join(' '),
+      content: results.map((v) => v.text).join(' '),
       verses: results
     })
   }
@@ -285,8 +279,8 @@ export function BiblePanel() {
             <p className="animate-pulse text-xs text-muted-foreground">Loading Bible...</p>
           )}
           {results.map((v) => (
-            <VerseCard 
-              key={`${v.book}-${v.chapter}-${v.verse}`} 
+            <VerseCard
+              key={`${v.book}-${v.chapter}-${v.verse}`}
               v={v}
               onAddToSchedule={handleAddToSchedule}
               onPreview={handlePreview}

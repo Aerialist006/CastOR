@@ -1,4 +1,4 @@
-import type { BibleTranslation, BookData, ChapterData } from '../types/bibleTypes'
+import type { BibleTranslation, BookData, ChapterData } from '../types/bible'
 
 export async function parseBible(
   filename: string,

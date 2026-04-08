@@ -57,6 +57,25 @@ const api = {
     getAll: () => ipcRenderer.invoke('songs:getAll'),
     save: (song: unknown) => ipcRenderer.invoke('songs:save', song),
     delete: (id: string) => ipcRenderer.invoke('songs:delete', id)
+  },
+  openFoldbackWindow: () => ipcRenderer.invoke('open-foldback-window'),
+  foldbackWindowReady: () => ipcRenderer.send('foldback-window-ready'),
+  closeFoldbackWindow: () => ipcRenderer.send('close-foldback-window'),
+  broadcastFoldbackContent: (payload) => ipcRenderer.send('foldback:broadcast', payload),
+  onFoldbackContentUpdate: (cb) => {
+    const handler = (_, payload) => cb(payload)
+    ipcRenderer.on('foldback:content', handler)
+    return () => ipcRenderer.removeListener('foldback:content', handler)
+  },
+  onFoldbackWindowReady: (cb) => {
+    const handler = () => cb()
+    ipcRenderer.on('foldback-window-ready', handler)
+    return () => ipcRenderer.removeListener('foldback-window-ready', handler)
+  },
+  onFoldbackWindowClosed: (cb) => {
+    const handler = () => cb()
+    ipcRenderer.on('foldback-window-closed', handler)
+    return () => ipcRenderer.removeListener('foldback-window-closed', handler)
   }
 }
 

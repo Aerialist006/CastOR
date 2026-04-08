@@ -29,6 +29,13 @@ export interface Api {
     save: (song: Song) => Promise<Song>
     delete: (id: string) => Promise<string>
   }
+  openFoldbackWindow: () => Promise<void>
+  closeFoldbackWindow: () => Promise<void>
+  foldbackWindowReady: () => void
+  broadcastFoldbackContent: (payload: unknown) => void
+  onFoldbackContentUpdate: (cb: (payload: any) => void) => () => void
+  onFoldbackWindowReady: (cb: () => void) => () => void
+  onFoldbackWindowClosed: (cb: () => void) => () => void
 }
 
 declare global {

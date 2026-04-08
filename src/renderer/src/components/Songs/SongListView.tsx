@@ -2,11 +2,20 @@ import { useState, useMemo } from 'react'
 import { Song } from '@/types/song'
 import { useTranslation } from 'react-i18next'
 import {
-  ColumnDef, flexRender, getCoreRowModel,
-  getSortedRowModel, SortingState, useReactTable,
+  ColumnDef,
+  flexRender,
+  getCoreRowModel,
+  getSortedRowModel,
+  SortingState,
+  useReactTable
 } from '@tanstack/react-table'
 import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow
 } from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
 import { ArrowUpDown, Eye, Plus, Music } from 'lucide-react'
@@ -20,66 +29,120 @@ interface SongListViewProps {
   onEdit: (song: Song) => void
 }
 
-export function SongListView({ songs, search, onPreview, onAddToSchedule, onEdit }: SongListViewProps) {
+export function SongListView({
+  songs,
+  search,
+  onPreview,
+  onAddToSchedule,
+  onEdit
+}: SongListViewProps) {
   const { t } = useTranslation()
   const [sorting, setSorting] = useState<SortingState>([])
 
-  const filtered = songs.filter(s =>
-    s.title.toLowerCase().includes(search.toLowerCase()) ||
-    s.author?.toLowerCase().includes(search.toLowerCase())
+  const filtered = useMemo(
+    () =>
+      songs.filter(
+        (s) =>
+          s.title.toLowerCase().includes(search.toLowerCase()) ||
+          s.author?.toLowerCase().includes(search.toLowerCase())
+      ),
+    [songs, search]
   )
 
-const columns = useMemo<ColumnDef<Song>[]>(() => [
-  {
-    accessorKey: 'title',
-    header: ({ column }) => (
-      <Button variant="ghost" size="sm" className="h-7 px-2 -ml-2 text-xs" onClick={() => column.toggleSorting()}>
-        {t('song.title')} <ArrowUpDown className="ml-1 h-3 w-3" />
-      </Button>
-    ),
-    cell: ({ row }) => <span className="font-medium truncate max-w-[160px] block">{row.original.title}</span>,
-  },
-  {
-    accessorKey: 'author',
-    header: ({ column }) => (
-      <Button variant="ghost" size="sm" className="h-7 px-2 -ml-2 text-xs" onClick={() => column.toggleSorting()}>
-        {t('song.author')} <ArrowUpDown className="ml-1 h-3 w-3" />
-      </Button>
-    ),
-    cell: ({ row }) => <span className="text-muted-foreground">{row.original.author || '—'}</span>,
-  },
-  {
-    accessorKey: 'tone',
-    header: ({ column }) => (
-      <Button variant="ghost" size="sm" className="h-7 px-2 -ml-2 text-xs" onClick={() => column.toggleSorting()}>
-        {t('song.tone')} <ArrowUpDown className="ml-1 h-3 w-3" />
-      </Button>
-    ),
-    cell: ({ row }) => <span>{row.original.tone}</span>,
-  },
-  {
-    accessorKey: 'bpm',
-    header: ({ column }) => (
-      <Button variant="ghost" size="sm" className="h-7 px-2 -ml-2 text-xs" onClick={() => column.toggleSorting()}>
-        {t('song.bpm')} <ArrowUpDown className="ml-1 h-3 w-3" />
-      </Button>
-    ),
-    cell: ({ row }) => <span>{row.original.bpm}</span>,
-  },
-  {
-    id: 'actions',
-    cell: ({ row }) => (
-      <div className="flex items-center gap-1 justify-end opacity-0 group-hover/row:opacity-100 transition-opacity">
-        <Button size="icon" variant="ghost" className="h-6 w-6" onClick={e => { e.stopPropagation(); onPreview(row.original) }}>
-          <Eye className="h-3.5 w-3.5" />
-        </Button>
-        <Button size="icon" variant="ghost" className="h-6 w-6" onClick={e => { e.stopPropagation(); onAddToSchedule(row.original) }}>
-          <Plus className="h-3.5 w-3.5" />
-        </Button>
-      </div>
-    ),
-  },
-], [t, onPreview, onAddToSchedule, onEdit])
+  const columns = useMemo<ColumnDef<Song>[]>(
+    () => [
+      {
+        accessorKey: 'title',
+        header: ({ column }) => (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-7 px-2 -ml-2 text-xs"
+            onClick={() => column.toggleSorting()}
+          >
+            {t('song.title')} <ArrowUpDown className="ml-1 h-3 w-3" />
+          </Button>
+        ),
+        cell: ({ row }) => (
+          <span className="font-medium truncate max-w-40 block">{row.original.title}</span>
+        )
+      },
+      {
+        accessorKey: 'author',
+        header: ({ column }) => (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-7 px-2 -ml-2 text-xs"
+            onClick={() => column.toggleSorting()}
+          >
+            {t('song.author')} <ArrowUpDown className="ml-1 h-3 w-3" />
+          </Button>
+        ),
+        cell: ({ row }) => (
+          <span className="text-muted-foreground">{row.original.author || '—'}</span>
+        )
+      },
+      {
+        accessorKey: 'tone',
+        header: ({ column }) => (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-7 px-2 -ml-2 text-xs"
+            onClick={() => column.toggleSorting()}
+          >
+            {t('song.tone')} <ArrowUpDown className="ml-1 h-3 w-3" />
+          </Button>
+        ),
+        cell: ({ row }) => <span>{row.original.tone}</span>
+      },
+      {
+        accessorKey: 'bpm',
+        header: ({ column }) => (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-7 px-2 -ml-2 text-xs"
+            onClick={() => column.toggleSorting()}
+          >
+            {t('song.bpm')} <ArrowUpDown className="ml-1 h-3 w-3" />
+          </Button>
+        ),
+        cell: ({ row }) => <span>{row.original.bpm}</span>
+      },
+      {
+        id: 'actions',
+        cell: ({ row }) => (
+          <div className="flex items-center gap-1 justify-end opacity-0 group-hover/row:opacity-100 transition-opacity">
+            <Button
+              size="icon"
+              variant="ghost"
+              className="h-6 w-6"
+              onClick={(e) => {
+                e.stopPropagation()
+                onPreview(row.original)
+              }}
+            >
+              <Eye className="h-3.5 w-3.5" />
+            </Button>
+            <Button
+              size="icon"
+              variant="ghost"
+              className="h-6 w-6"
+              onClick={(e) => {
+                e.stopPropagation()
+                onAddToSchedule(row.original)
+              }}
+            >
+              <Plus className="h-3.5 w-3.5" />
+            </Button>
+          </div>
+        )
+      }
+    ],
+    [t, onPreview, onAddToSchedule, onEdit]
+  )
 
   const table = useReactTable({
     data: filtered,
@@ -87,7 +150,7 @@ const columns = useMemo<ColumnDef<Song>[]>(() => [
     state: { sorting },
     onSortingChange: setSorting,
     getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
+    getSortedRowModel: getSortedRowModel()
   })
 
   if (filtered.length === 0) {
@@ -100,35 +163,37 @@ const columns = useMemo<ColumnDef<Song>[]>(() => [
   }
 
   return (
-    <ScrollArea className="flex-1">
-      <Table>
-        <TableHeader>
-          {table.getHeaderGroups().map(hg => (
-            <TableRow key={hg.id}>
-              {hg.headers.map(h => (
-                <TableHead key={h.id} className="h-8 text-xs">
-                  {flexRender(h.column.columnDef.header, h.getContext())}
-                </TableHead>
-              ))}
-            </TableRow>
-          ))}
-        </TableHeader>
-        <TableBody>
-          {table.getRowModel().rows.map(row => (
-            <TableRow
-              key={row.id}
-              className="group/row cursor-pointer h-9"
-              onDoubleClick={() => onEdit(row.original)}
-            >
-              {row.getVisibleCells().map(cell => (
-                <TableCell key={cell.id} className="py-1 text-xs">
-                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                </TableCell>
-              ))}
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </ScrollArea>
+    <div className="flex-1 min-h-0">
+      <ScrollArea className="h-full">
+        <Table>
+          <TableHeader>
+            {table.getHeaderGroups().map((hg) => (
+              <TableRow key={hg.id}>
+                {hg.headers.map((h) => (
+                  <TableHead key={h.id} className="h-8 text-xs">
+                    {flexRender(h.column.columnDef.header, h.getContext())}
+                  </TableHead>
+                ))}
+              </TableRow>
+            ))}
+          </TableHeader>
+          <TableBody>
+            {table.getRowModel().rows.map((row) => (
+              <TableRow
+                key={row.id}
+                className="group/row cursor-pointer h-9"
+                onDoubleClick={() => onEdit(row.original)}
+              >
+                {row.getVisibleCells().map((cell) => (
+                  <TableCell key={cell.id} className="py-1 text-xs">
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                  </TableCell>
+                ))}
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </ScrollArea>
+    </div>
   )
 }

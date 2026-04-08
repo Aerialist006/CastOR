@@ -1,6 +1,6 @@
 import Preview from '@/components/Sections/Preview'
 import Schedule from '@/components/Sections/Schedule'
-import { BiblePanel } from '@/components/BiblePanel/BiblePanel'
+import { BiblePanel } from '@/components/Sections/BiblePanel/BiblePanel'
 import { useTranslation } from 'react-i18next'
 import { SongModal } from '@/components/Songs/SongModal'
 import { SongGridView } from '@/components/Songs/SongGridView'
@@ -27,6 +27,7 @@ import {
 import { useState } from 'react'
 import type { Song } from '@/types/song'
 import { groupVerses, buildSongGroups } from '@/utils/songParser'
+import { BackgroundPanel } from '@/components/Sections/BackgroundPanel/BackgroundPanel'
 
 const mediaTabs = [
   { value: 'music', icon: Music, labelKey: 'dashboard.song' },
@@ -62,15 +63,15 @@ const Dashboard = () => {
   }
 
   const handleAddToSchedule = (song: Song) => {
-    const groups = buildSongGroups(song.content)
     addToSchedule({
       id: generateId(),
       type: 'song',
       title: song.title,
       subtitle: song.author,
-      content: groups[0]?.slides[0]?.text ?? '',
-      songId: song.id,
-      songGroups: groups
+      tone: song.tone,
+      originalTone: song.originalTone ?? song.tone,
+      songGroups: buildSongGroups(song.content),
+      songId: song.id
     })
   }
 
@@ -197,7 +198,12 @@ const Dashboard = () => {
 
             <TabsContent value="slides" className="mt-0 p-2 self-stretch" />
             <TabsContent value="videos" className="mt-0 p-2 self-stretch" />
-            <TabsContent value="background" className="mt-0 p-2 self-stretch" />
+            <TabsContent
+              value="background"
+              className="mt-0 w-full p-2 self-stretch flex flex-col gap-2 min-w-0"
+            >
+              <BackgroundPanel />
+            </TabsContent>
             <TabsContent value="notes" className="mt-0 p-2 self-stretch" />
             <TabsContent value="announcements" className="mt-0 p-2 self-stretch" />
           </Tabs>

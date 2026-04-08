@@ -3,6 +3,7 @@ export interface Song {
   title: string
   author: string
   tone: string
+  originalTone: string
   bpm: number
   content: string
   createdAt: string
@@ -35,6 +36,7 @@ export interface GroupedVerse {
 export interface SongSubverse {
   id: string
   text: string
+  rawText?: string
 }
 
 export interface SongVerseGroup {

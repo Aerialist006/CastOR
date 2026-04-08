@@ -1,12 +1,16 @@
-export const KEYS = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
+export const KEYS = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'F#', 'G', 'Ab', 'A', 'Bb', 'B']
 
 const SHARP = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
-const FLAT  = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B']
+const FLAT = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B']
 const MAJOR_SCALE = [0, 2, 4, 5, 7, 9, 11]
-const FLAT_KEYS = ['F', 'Bb', 'Eb', 'Ab', 'Db', 'Gb']
+const FLAT_KEYS = new Set(['F', 'Bb', 'Eb', 'Ab', 'Db', 'Gb'])
+
+// Passthrough tokens — never attempt to transpose these
+const SKIP_RE = /^(N\.?C\.?|%|x+)$/i
 
 function noteIndex(note: string): number {
-  return SHARP.indexOf(note) !== -1 ? SHARP.indexOf(note) : FLAT.indexOf(note)
+  const s = SHARP.indexOf(note)
+  return s !== -1 ? s : FLAT.indexOf(note)
 }
 
 function parseChord(chord: string): { root: string; quality: string } | null {
@@ -15,14 +19,26 @@ function parseChord(chord: string): { root: string; quality: string } | null {
 }
 
 export function transposeChord(chord: string, fromKey: string, toKey: string): string {
+  if (SKIP_RE.test(chord)) return chord
+
+  // ── Slash chords: G/B, Am/E, D/F# ──────────────────────────────────────
+  const slashIdx = chord.indexOf('/')
+  if (slashIdx !== -1) {
+    const main = chord.slice(0, slashIdx)
+    const bass = chord.slice(slashIdx + 1)
+    return `${transposeChord(main, fromKey, toKey)}/${transposeChord(bass, fromKey, toKey)}`
+  }
+
   const parsed = parseChord(chord)
   if (!parsed) return chord
 
-  const semitones = (noteIndex(toKey) - noteIndex(fromKey) + 12) % 12
+  const fromIdx = noteIndex(fromKey)
+  const toIdx = noteIndex(toKey)
   const rootIdx = noteIndex(parsed.root)
-  if (rootIdx === -1) return chord
+  if (rootIdx === -1 || fromIdx === -1 || toIdx === -1) return chord
 
-  const chromatic = FLAT_KEYS.includes(toKey) ? FLAT : SHARP
+  const semitones = (toIdx - fromIdx + 12) % 12
+  const chromatic = FLAT_KEYS.has(toKey) ? FLAT : SHARP
   return chromatic[(rootIdx + semitones) % 12] + parsed.quality
 }
 
@@ -40,16 +56,17 @@ export function nashvilleToChord(degree: string, key: string): string {
 
   let semitones = MAJOR_SCALE[num]
   if (acc === 'b') semitones = (semitones - 1 + 12) % 12
-  if (acc === '#') semitones = (semitones + 1) % 12
+  else if (acc === '#') semitones = (semitones + 1) % 12
 
-  const chromatic = FLAT_KEYS.includes(key) ? FLAT : SHARP
+  const chromatic = FLAT_KEYS.has(key) ? FLAT : SHARP
   return chromatic[(keyIdx + semitones) % 12] + quality
 }
 
 export function transposeSongContent(content: string, fromKey: string, toKey: string): string {
   if (fromKey === toKey) return content
-  return content.replace(/\{&([^}]+)\}/g, (match, symbol) => {
-    if (/^[b#]?\d/.test(symbol)) return match // Nashville stays as-is
+  return content.replace(/\{&([^}]+)\}/g, (_match, symbol) => {
+    // Nashville numbers stay as-is — they're key-relative, not absolute
+    if (/^[b#]?\d/.test(symbol)) return _match
     return `{&${transposeChord(symbol, fromKey, toKey)}}`
   })
 }

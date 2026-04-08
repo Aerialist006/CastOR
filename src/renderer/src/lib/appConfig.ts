@@ -1,3 +1,6 @@
+import type { BackgroundConfig } from '@/types/background'
+import { DEFAULT_BACKGROUND } from '@/types/background'
+
 export interface AppConfig {
   activeBibleId: string
   versesDisplayed: number
@@ -22,6 +25,14 @@ export interface AppConfig {
   textOutlineWidth: number
   aspectRatio: '16:9' | '4:3'
   textOutlineColor: string
+  autoSizeFit: boolean
+  background?: BackgroundConfig
+  foldbackEnabled?: boolean
+  foldbackMonitorIndex?: number // -1 = auto (third monitor)
+  foldbackShowChords?: boolean
+  foldbackShowNextVerse?: boolean
+  foldbackFontSize?: number
+  foldbackDarkMode?: boolean
 }
 
 export const DEFAULT_CONFIG: AppConfig = {
@@ -47,5 +58,13 @@ export const DEFAULT_CONFIG: AppConfig = {
   textOutline: false,
   textOutlineWidth: 2,
   textOutlineColor: '#000000',
-  aspectRatio: '16:9'
+  aspectRatio: '16:9',
+  autoSizeFit: false,
+  background: DEFAULT_BACKGROUND,
+  foldbackEnabled: false,
+  foldbackMonitorIndex: -1,
+  foldbackShowChords: true,
+  foldbackShowNextVerse: true,
+  foldbackFontSize: 48,
+  foldbackDarkMode: false,
 }

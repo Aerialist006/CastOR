@@ -1,18 +1,32 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter
 } from '@/components/ui/dialog'
 import {
-  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
-  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle
 } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
 } from '@/components/ui/select'
 import { Song } from '../../types/song'
 import { KEYS } from '@/utils/chordTransposer'
@@ -26,8 +40,6 @@ interface SongModalProps {
 
 type Confirm = 'save' | 'discard' | 'close' | null
 
-const blank = (): Partial<Song> => ({ title: '', author: '', tone: 'C', bpm: 120, content: '' })
-
 const PLACEHOLDER = `[Verse 1]
 {&C}    {&Am}
 Line 1
@@ -40,15 +52,22 @@ Line 2`
 
 export function SongModal({ open, onClose, onSave, initial }: SongModalProps) {
   const { t } = useTranslation()
+  const blank = (): Partial<Song> => ({
+    title: '',
+    author: '',
+    originalTone: 'C', // ← add
+    tone: 'C',
+    bpm: 120,
+    content: ''
+  })
   const [form, setForm] = useState<Partial<Song>>(initial ?? blank())
   const [confirm, setConfirm] = useState<Confirm>(null)
   const [dirty, setDirty] = useState(false)
 
   const set = (field: keyof Song, value: string | number) => {
-    setForm(p => ({ ...p, [field]: value }))
+    setForm((p) => ({ ...p, [field]: value }))
     setDirty(true)
   }
-
   const attemptClose = () => (dirty ? setConfirm('close') : onClose())
 
   const handleConfirm = () => {
@@ -57,11 +76,12 @@ export function SongModal({ open, onClose, onSave, initial }: SongModalProps) {
         id: initial?.id ?? crypto.randomUUID(),
         title: form.title ?? '',
         author: form.author ?? '',
+        originalTone: initial?.originalTone ?? form.tone ?? 'C', // ← preserved from initial, or set from tone on creation
         tone: form.tone ?? 'C',
         bpm: form.bpm ?? 120,
         content: form.content ?? '',
         createdAt: initial?.createdAt ?? new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
       }
       onSave(song)
       setDirty(false)
@@ -78,41 +98,49 @@ export function SongModal({ open, onClose, onSave, initial }: SongModalProps) {
     setConfirm(null)
   }
 
-  const confirmMeta: Record<NonNullable<Confirm>, { title: string; desc: string; action: string }> = {
+  const confirmMeta: Record<
+    NonNullable<Confirm>,
+    { title: string; desc: string; action: string }
+  > = {
     save: {
       title: t('song.confirm.saveTitle'),
       desc: t('song.confirm.saveDesc'),
-      action: t('song.save'),
+      action: t('song.save')
     },
     discard: {
       title: t('song.confirm.discardTitle'),
       desc: t('song.confirm.discardDesc'),
-      action: t('song.discard'),
+      action: t('song.discard')
     },
     close: {
       title: t('song.confirm.closeTitle'),
       desc: t('song.confirm.closeDesc'),
-      action: t('common.close'),
-    },
+      action: t('common.close')
+    }
   }
 
   return (
     <>
-      <Dialog open={open} onOpenChange={o => { if (!o) attemptClose() }} >
+      <Dialog
+        open={open}
+        onOpenChange={(o) => {
+          if (!o) attemptClose()
+        }}
+      >
         <DialogContent className="  max-w-[20dvw] max-h-[90vh] flex flex-col gap-4">
           <DialogHeader>
-            <DialogTitle>
-              {initial?.id ? t('song.editTitle') : t('song.addTitle')}
-            </DialogTitle>
+            <DialogTitle>{initial?.id ? t('song.editTitle') : t('song.addTitle')}</DialogTitle>
           </DialogHeader>
 
           <div className="flex flex-col gap-4 overflow-y-auto no-scrollbar flex-1 pr-1">
             <div className="grid grid-cols-2 gap-4">
               <div className="flex flex-col gap-1.5">
-                <Label>{t('song.title')} <span className="text-destructive">*</span></Label>
+                <Label>
+                  {t('song.title')} <span className="text-destructive">*</span>
+                </Label>
                 <Input
                   value={form.title}
-                  onChange={e => set('title', e.target.value)}
+                  onChange={(e) => set('title', e.target.value)}
                   placeholder={t('song.titlePlaceholder')}
                 />
               </div>
@@ -120,7 +148,7 @@ export function SongModal({ open, onClose, onSave, initial }: SongModalProps) {
                 <Label>{t('song.author')}</Label>
                 <Input
                   value={form.author}
-                  onChange={e => set('author', e.target.value)}
+                  onChange={(e) => set('author', e.target.value)}
                   placeholder={t('song.authorPlaceholder')}
                 />
               </div>
@@ -129,13 +157,15 @@ export function SongModal({ open, onClose, onSave, initial }: SongModalProps) {
             <div className="grid grid-cols-2 gap-4">
               <div className="flex flex-col gap-1.5">
                 <Label>{t('song.tone')}</Label>
-                <Select value={form.tone} onValueChange={v => set('tone', v)}>
+                <Select value={form.tone} onValueChange={(v) => set('tone', v)}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {KEYS.map(k => (
-                      <SelectItem key={k} value={k}>{k}</SelectItem>
+                    {KEYS.map((k) => (
+                      <SelectItem key={k} value={k}>
+                        {k}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -147,7 +177,7 @@ export function SongModal({ open, onClose, onSave, initial }: SongModalProps) {
                   min={40}
                   max={300}
                   value={form.bpm}
-                  onChange={e => set('bpm', parseInt(e.target.value) || 120)}
+                  onChange={(e) => set('bpm', parseInt(e.target.value) || 120)}
                 />
               </div>
             </div>
@@ -158,14 +188,14 @@ export function SongModal({ open, onClose, onSave, initial }: SongModalProps) {
               <Textarea
                 className="min-h-[300px] font-mono text-xs resize-none flex-1"
                 value={form.content}
-                onChange={e => set('content', e.target.value)}
+                onChange={(e) => set('content', e.target.value)}
                 placeholder={PLACEHOLDER}
               />
             </div>
           </div>
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => dirty ? setConfirm('discard') : onClose()}>
+            <Button variant="outline" onClick={() => (dirty ? setConfirm('discard') : onClose())}>
               {t('song.discard')}
             </Button>
             <Button onClick={() => setConfirm('save')} disabled={!form.title?.trim()}>
@@ -175,7 +205,12 @@ export function SongModal({ open, onClose, onSave, initial }: SongModalProps) {
         </DialogContent>
       </Dialog>
 
-      <AlertDialog open={confirm !== null} onOpenChange={o => { if (!o) setConfirm(null) }}>
+      <AlertDialog
+        open={confirm !== null}
+        onOpenChange={(o) => {
+          if (!o) setConfirm(null)
+        }}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>{confirm && confirmMeta[confirm].title}</AlertDialogTitle>

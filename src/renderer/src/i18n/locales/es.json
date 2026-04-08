@@ -69,6 +69,18 @@
     "emptyDesc": "Agrega versículos o medios para construir tu presentación"
   },
   "settings": {
+    "foldbackTitle": "Monitor de Escenario (Foldback)",
+    "foldbackDesc": "Tercera pantalla para los músicos — muestra acordes, verso actual y próximas letras",
+    "foldbackEnabled": "Activar monitor de escenario",
+    "foldbackEnabledDesc": "Abrir una tercera ventana de visualización para los músicos",
+    "foldbackMonitor": "Pantalla del monitor de escenario",
+    "foldbackAutoDetect": "Detección automática (tercer monitor)",
+    "foldbackShowChords": "Mostrar acordes",
+    "foldbackShowChordsDesc": "Mostrar los símbolos de acordes sobre las letras",
+    "foldbackShowNext": "Mostrar siguiente verso",
+    "foldbackShowNextDesc": "Mostrar el nombre del próximo verso y su primera línea",
+    "foldbackFontSize": "Tamaño de fuente",
+    "foldbackOpenWindow": "Abrir Ventana del Monitor de Escenario",
     "aspectRatio": "Relación de aspecto",
     "aspectRatio169Desc": "Pantallas y proyectores modernos",
     "aspectRatio43Desc": "Proyectores y pantallas antiguas",
@@ -123,7 +135,10 @@
     "textOutline": "Contorno de texto",
     "textOutlineDesc": "Borde alrededor de cada letra",
     "textOutlineWidth": "Grosor del contorno",
-    "textOutlineColor": "Color del contorno"
+    "textOutlineColor": "Color del contorno",
+    "fontSizeMax": "Tamaño máximo de fuente",
+    "autoSizeFit": "Ajuste automático al desbordamiento",
+    "autoSizeFitDesc": "Reduce el texto automáticamente para que nunca desborde los márgenes. El tamaño de fuente de arriba se convierte en el máximo."
   },
   "song": {
     "intro": "Introducción",
@@ -155,7 +170,9 @@
     "addAll": "Agregar todo",
     "search": "Buscar canciones...",
     "empty": "Sin canciones aún",
-    "noResults": "No se encontraron canciones"
+    "noResults": "No se encontraron canciones",
+    "finishing": "Finalizando...",
+    "done": "Terminado"
   },
   "common": {
     "cancel": "Cancelar",

@@ -12,12 +12,19 @@ interface SongGridViewProps {
   onEdit: (song: Song) => void
 }
 
-export function SongGridView({ songs, search, onPreview, onAddToSchedule, onEdit }: SongGridViewProps) {
+export function SongGridView({
+  songs,
+  search,
+  onPreview,
+  onAddToSchedule,
+  onEdit
+}: SongGridViewProps) {
   const { t } = useTranslation()
 
-  const filtered = songs.filter(s =>
-    s.title.toLowerCase().includes(search.toLowerCase()) ||
-    s.author?.toLowerCase().includes(search.toLowerCase())
+  const filtered = songs.filter(
+    (s) =>
+      s.title.toLowerCase().includes(search.toLowerCase()) ||
+      s.author?.toLowerCase().includes(search.toLowerCase())
   )
 
   if (filtered.length === 0) {
@@ -30,18 +37,20 @@ export function SongGridView({ songs, search, onPreview, onAddToSchedule, onEdit
   }
 
   return (
-    <ScrollArea className="flex-1">
-      <div className="grid grid-cols-2 xl:grid-cols-3 gap-2 p-1 pr-3">
-        {filtered.map(song => (
-          <SongCard
-            key={song.id}
-            song={song}
-            onPreview={onPreview}
-            onAddToSchedule={onAddToSchedule}
-            onDoubleClick={onEdit}
-          />
-        ))}
-      </div>
-    </ScrollArea>
+    <div className="flex-1 min-h-0">
+      <ScrollArea className="h-full">
+        <div className="grid grid-cols-2 xl:grid-cols-3 gap-2 p-1 pr-3">
+          {filtered.map((song) => (
+            <SongCard
+              key={song.id}
+              song={song}
+              onPreview={onPreview}
+              onAddToSchedule={onAddToSchedule}
+              onDoubleClick={onEdit}
+            />
+          ))}
+        </div>
+      </ScrollArea>
+    </div>
   )
 }

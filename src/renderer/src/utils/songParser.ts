@@ -1,5 +1,5 @@
 import { ParsedVerse, ParsedLine, ParsedChord, GroupedVerse, SongVerseGroup } from '@/types/song'
-
+import { transposeSongContent } from './chordTransposer'
 
 const VERSE_TITLE_RE = /^\[(.+)\]$/
 const CHORD_TOKEN_RE = /\{&([^}]+)\}/
@@ -57,17 +57,16 @@ export function stripChords(content: string): string {
     .trim()
 }
 
-// Groups parsed verses by title. Same title = all sections merged under one GroupedVerse.
-// Unnamed sections each get their own group.
 export function groupVerses(content: string): GroupedVerse[] {
   const parsed = parseSong(content)
   const groups = new Map<string, { title?: string; lines: string[] }>()
   const order: string[] = []
 
   for (const verse of parsed) {
-    // Unnamed sections like __unnamed_0 each stay separate
-    const key = verse.title ?? `__unnamed_${Math.random()}`
-    const displayTitle = verse.title?.startsWith('__unnamed_') ? undefined : verse.title
+    const isUnnamed = !verse.title || verse.title.startsWith('__unnamed_')
+    // ── Fix: unnamed sections use a stable unique key so they don't merge ──
+    const key = isUnnamed ? `__unnamed_${order.length}` : verse.title!
+    const displayTitle = isUnnamed ? undefined : verse.title
 
     const textLines = verse.lines
       .filter((l) => l.type !== 'empty')
@@ -102,14 +101,20 @@ export function getVersePreview(content: string, maxLines = 2): string {
     .join(' / ')
 }
 
-export function buildSongGroups(content: string): SongVerseGroup[] {
-  const parsed = parseSong(content)
+export function buildSongGroups(
+  content: string,
+  fromKey?: string,
+  toKey?: string
+): SongVerseGroup[] {
+  const source =
+    fromKey && toKey && fromKey !== toKey ? transposeSongContent(content, fromKey, toKey) : content
+
+  const parsed = parseSong(source)
   const groupMap = new Map<string, SongVerseGroup>()
   const order: string[] = []
 
   for (const verse of parsed) {
     const isUnnamed = !verse.title || verse.title.startsWith('__unnamed_')
-    // unnamed sections never share a group — each gets a unique key
     const key = isUnnamed ? `__unnamed_${order.length}` : verse.title!
     const displayTitle = isUnnamed ? undefined : verse.title
 
@@ -118,14 +123,18 @@ export function buildSongGroups(content: string): SongVerseGroup[] {
       order.push(key)
     }
 
-    const text = verse.lines
-      .filter((l) => l.type !== 'empty')
+    const nonEmpty = verse.lines.filter((l) => l.type !== 'empty')
+    const text = nonEmpty
       .map((l) => stripChords(l.content))
+      .filter(Boolean)
+      .join('\n')
+    const rawText = nonEmpty
+      .map((l) => l.content)
       .filter(Boolean)
       .join('\n')
 
     if (text) {
-      groupMap.get(key)!.slides.push({ id: crypto.randomUUID(), text })
+      groupMap.get(key)!.slides.push({ id: crypto.randomUUID(), text, rawText })
     }
   }
 

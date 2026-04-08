@@ -65,6 +65,18 @@
     "background": "Backgrounds"
   },
   "settings": {
+    "foldbackTitle": "Stage Monitor (Foldback)",
+    "foldbackDesc": "Third screen for performers — shows chords, current verse, and upcoming lyrics",
+    "foldbackEnabled": "Enable stage monitor",
+    "foldbackEnabledDesc": "Open a third display window for performers",
+    "foldbackMonitor": "Stage monitor display",
+    "foldbackAutoDetect": "Auto-detect (third monitor)",
+    "foldbackShowChords": "Show chords",
+    "foldbackShowChordsDesc": "Display chord symbols above the lyrics",
+    "foldbackShowNext": "Show next verse",
+    "foldbackShowNextDesc": "Show upcoming verse name and first line",
+    "foldbackFontSize": "Font size",
+    "foldbackOpenWindow": "Open Stage Monitor Window",
     "showVerseRef": "Show verse reference",
     "showVerseRefDesc": "Show \"John 3:16\" below the verse text",
     "lineHeight": "Line height",
@@ -119,14 +131,17 @@
     "textOutlineColor": "Outline color",
     "aspectRatio": "Screen ratio",
     "aspectRatio169Desc": "Modern displays and projectors",
-    "aspectRatio43Desc": "Older projectors and screens"
+    "aspectRatio43Desc": "Older projectors and screens",
+    "fontSizeMax": "Maximum font size",
+    "autoSizeFit": "Adjust autosize when overflow",
+    "autoSizeFitDesc": "Shrinks text automatically so it never overflows the margins. The font size above becomes the maximum."
   },
   "schedule": {
     "empty": "No items scheduled",
     "emptyDesc": "Add verses or media to build your presentation"
   },
   "song": {
-     "intro": "Intro",
+    "intro": "Intro",
     "slide": "Slide",
     "prev": "Previous",
     "next": "Next",
@@ -155,7 +170,9 @@
     "addAll": "Add all",
     "search": "Search songs...",
     "empty": "No songs yet",
-    "noResults": "No songs found"
+    "noResults": "No songs found",
+    "finishing": "Finishing...",
+    "done": "Done"
   },
   "common": {
     "cancel": "Cancel",

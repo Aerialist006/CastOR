@@ -1,5 +1,5 @@
 import { useBibleContext } from '../../context/BibleContext'
-import { TRANSLATION_CONFIGS } from '../../types/bibleTypes'
+import { TRANSLATION_CONFIGS } from '../../types/bible'
 import { Label } from '@/components/ui/label'
 import {
   Select,

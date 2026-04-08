@@ -9,6 +9,7 @@ import { CastPreview } from '@/components/CastPreview'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { Slider } from '@/components/ui/slider'
+import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import {
@@ -223,6 +224,18 @@ export function DisplaySettings() {
                   checked={c.showVerseNumbers}
                   onCheckedChange={(v) => set({ showVerseNumbers: v })}
                 />
+              </div>
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label>{t('settings.autoSizeFit', 'Adjust autosize when overflow')}</Label>
+                  <p className="text-xs text-muted-foreground">
+                    {t(
+                      'settings.autoSizeFitDesc',
+                      'Shrinks text automatically so it never overflows the margins. The font size above becomes the maximum.'
+                    )}
+                  </p>
+                </div>
+                <Switch checked={c.autoSizeFit} onCheckedChange={(v) => set({ autoSizeFit: v })} />
               </div>
             </CardContent>
           </Card>
@@ -446,6 +459,115 @@ export function DisplaySettings() {
                   </ul>
                 </div>
               )}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>{t('settings.foldbackTitle', 'Stage Monitor (Foldback)')}</CardTitle>
+              <CardDescription>
+                {t(
+                  'settings.foldbackDesc',
+                  'Third screen for performers — shows chords, current verse, and upcoming lyrics'
+                )}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label>{t('settings.foldbackEnabled', 'Enable stage monitor')}</Label>
+                  <p className="text-xs text-muted-foreground">
+                    {t(
+                      'settings.foldbackEnabledDesc',
+                      'Open a third display window for performers'
+                    )}
+                  </p>
+                </div>
+                <Switch
+                  checked={c.foldbackEnabled}
+                  onCheckedChange={(v) => set({ foldbackEnabled: v })}
+                />
+              </div>
+
+              <div
+                className={cn('space-y-4', !c.foldbackEnabled && 'opacity-40 pointer-events-none')}
+              >
+                <div className="space-y-2">
+                  <Label>{t('settings.foldbackMonitor', 'Stage monitor display')}</Label>
+                  <Select
+                    value={String(c.foldbackMonitorIndex ?? -1)}
+                    onValueChange={(v) => set({ foldbackMonitorIndex: parseInt(v) })}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="-1">
+                        {t('settings.foldbackAutoDetect', 'Auto-detect (third monitor)')}
+                      </SelectItem>
+                      {displays.map((d) => (
+                        <SelectItem key={d.id} value={String(d.index)}>
+                          {d.label} ({d.bounds.width}×{d.bounds.height})
+                          {d.isPrimary ? ' — Primary' : ''}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label>{t('settings.foldbackShowChords', 'Show chords')}</Label>
+                    <p className="text-xs text-muted-foreground">
+                      {t(
+                        'settings.foldbackShowChordsDesc',
+                        'Display chord symbols above the lyrics'
+                      )}
+                    </p>
+                  </div>
+                  <Switch
+                    checked={c.foldbackShowChords ?? true}
+                    onCheckedChange={(v) => set({ foldbackShowChords: v })}
+                  />
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label>{t('settings.foldbackShowNext', 'Show next verse')}</Label>
+                    <p className="text-xs text-muted-foreground">
+                      {t(
+                        'settings.foldbackShowNextDesc',
+                        'Show upcoming verse name and first line'
+                      )}
+                    </p>
+                  </div>
+                  <Switch
+                    checked={c.foldbackShowNextVerse ?? true}
+                    onCheckedChange={(v) => set({ foldbackShowNextVerse: v })}
+                  />
+                </div>
+
+                <SliderRow
+                  label={t('settings.foldbackFontSize', 'Font size')}
+                  value={c.foldbackFontSize ?? 48}
+                  min={24}
+                  max={96}
+                  step={2}
+                  unit="px"
+                  onChange={(v) => set({ foldbackFontSize: v })}
+                />
+
+                {c.foldbackEnabled && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full h-8 text-xs"
+                    onClick={() => window.api?.openFoldbackWindow?.()}
+                  >
+                    {t('settings.foldbackOpenWindow', 'Open Stage Monitor Window')}
+                  </Button>
+                )}
+              </div>
             </CardContent>
           </Card>
         </div>

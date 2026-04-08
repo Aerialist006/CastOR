@@ -3,8 +3,9 @@ import { cn } from '@/utils/utils'
 import type { SceneItem } from '@/context/PresentationContext'
 import type { AppConfig } from '@/lib/appConfig'
 import { DEFAULT_CONFIG } from '@/lib/appConfig'
-import { getBibleAbbrev } from '@/lib/fontOptions'
 import { useFontLoader } from '@/hooks/useFontLoader'
+import { SlideCanvas } from '@/components/SlideCanvas'
+import { getBackgroundStyle } from '@/utils/backgroundUtils'
 
 const REF_W_BY_RATIO: Record<string, number> = {
   '16:9': 1920,
@@ -12,24 +13,13 @@ const REF_W_BY_RATIO: Record<string, number> = {
 }
 const REF_H = 1080
 
-const PLACEHOLDER_VERSE = {
-  book: 'John',
-  chapter: 3,
-  verse: 16,
-  text: 'For God so loved the world that he gave his one and only Son, that whoever believes in him shall not perish but have eternal life.'
-}
-
 interface CastPreviewProps {
   content?: SceneItem | null
   config?: Partial<AppConfig>
   isLive?: boolean
   showPlaceholder?: boolean
   className?: string
-}
-
-type CastSceneItem = SceneItem & {
-  showTitle?: boolean
-  subtitle?: string
+  onCanvasSize?: (w: number) => void
 }
 
 export function CastPreview({
@@ -37,11 +27,14 @@ export function CastPreview({
   config = {},
   isLive = false,
   showPlaceholder = false,
-  className
+  className,
+  onCanvasSize
 }: CastPreviewProps) {
   const c = { ...DEFAULT_CONFIG, ...config }
+  const bgStyle = getBackgroundStyle(c.background)
   const ratio = c.aspectRatio ?? '16:9'
   const REF_W = REF_W_BY_RATIO[ratio] ?? 1920
+  const availableH = REF_H * (1 - (c.marginTop ?? 0) / 600 - (c.marginBottom ?? 0) / 600)
 
   const wrapRef = useRef<HTMLDivElement>(null)
   const [scale, setScale] = useState(1)
@@ -51,237 +44,79 @@ export function CastPreview({
   useEffect(() => {
     const el = wrapRef.current
     if (!el) return
-
     const obs = new ResizeObserver(([entry]) => {
       const { width, height } = entry.contentRect
-      const scaleByW = width / REF_W
-      const scaleByH = height / REF_H
-      setScale(Math.min(scaleByW, scaleByH))
+      const s = Math.min(width / REF_W, height / REF_H)
+      setScale(s)
+      onCanvasSize?.(Math.round(REF_W * s)) // ← notify parent
     })
+    obs.observe(el)
+    return () => obs.disconnect()
+  }, [REF_W, onCanvasSize])
 
+  useEffect(() => {
+    const el = wrapRef.current
+    if (!el) return
+    const obs = new ResizeObserver(([entry]) => {
+      const { width, height } = entry.contentRect
+      setScale(Math.min(width / REF_W, height / REF_H))
+    })
     obs.observe(el)
     return () => obs.disconnect()
   }, [REF_W])
 
-  const verse =
-    content?.type === 'bible' && content.verses?.[0]
-      ? content.verses[0]
-      : showPlaceholder
-        ? PLACEHOLDER_VERSE
-        : null
-
-  const scene = content as CastSceneItem | null | undefined
-  const isSong = scene?.type === 'song'
-  const showSceneTitle =
-    scene?.showTitle ?? (!isSong && Boolean(scene?.title))
-
-  const isEmpty = !verse && !content?.title && !content?.content
-
-  const refSize = c.refSyncSize ? c.fontSize * 0.45 : c.refFontSize
-  const abbrev = getBibleAbbrev(c.activeBibleId)
-
-  const shadowCSS = c.textShadow
-    ? `2px 2px ${c.textShadowBlur}px ${c.textShadowColor}, -1px -1px ${Math.ceil(c.textShadowBlur / 2)}px ${c.textShadowColor}`
-    : 'none'
-
-  const outlineCSS = c.textOutline ? `${c.textOutlineWidth}px ${c.textOutlineColor}` : undefined
-
-  const textBase: React.CSSProperties = {
-    fontFamily: c.fontFamily,
-    textShadow: shadowCSS,
-    WebkitTextStroke: outlineCSS,
-    paintOrder: c.textOutline ? 'stroke fill' : undefined
-  }
-
   const justifyContent =
-    c.textAlign === 'left'
-      ? 'flex-start'
-      : c.textAlign === 'right'
-        ? 'flex-end'
-        : 'center'
+    c.textAlign === 'left' ? 'flex-start' : c.textAlign === 'right' ? 'flex-end' : 'center'
+
+  // Actual pixel size the scaled canvas occupies
+  const canvasW = Math.round(REF_W * scale)
+  const canvasH = Math.round(REF_H * scale)
 
   return (
-    <div
-      ref={wrapRef}
-      className={cn(
-        'relative w-full overflow-hidden rounded-lg bg-black',
-        ratio === '4:3' ? 'aspect-4/3' : 'aspect-video',
-        isLive && content
-          ? 'border-2 border-red-600'
-          : isLive
-            ? 'border-2 border-red-600/30'
-            : content
-              ? 'border-2 border-primary'
-              : 'border-2 border-accent',
-        className
-      )}
-    >
+    // Outer: fills available space, used only for measurement — no border, no clip
+    <div ref={wrapRef} className={cn('w-full h-full flex items-start justify-start', className)}>
+      {/* Inner: exactly as big as the scaled canvas — border hugs the content */}
       <div
-        style={{
-          width: REF_W,
-          height: REF_H,
-          transform: `scale(${scale})`,
-          transformOrigin: 'top left',
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          paddingTop: `${c.marginTop}%`,
-          paddingBottom: `${c.marginBottom}%`,
-          paddingLeft: `${c.marginLeft}%`,
-          paddingRight: `${c.marginRight}%`,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: justifyContent,
-          justifyContent: 'center'
-        }}
-      >
-        {isEmpty ? (
-          <p
-            style={{
-              ...textBase,
-              fontSize: 36,
-              color: 'rgba(255,255,255,0.25)',
-              textAlign: 'center'
-            }}
-          >
-            {isLive ? '' : ''}
-          </p>
-        ) : verse ? (
-          <>
-            <p
-              style={{
-                ...textBase,
-                fontSize: c.fontSize,
-                lineHeight: c.lineHeight,
-                textAlign: c.textAlign,
-                color: 'white',
-                width: '100%',
-                marginBottom: c.showVerseRef || c.showBibleVersion ? c.fontSize * 0.5 : 0,
-                whiteSpace: 'pre-wrap'
-              }}
-            >
-              {c.showVerseNumbers && (
-                <sup
-                  style={{
-                    ...textBase,
-                    fontSize: c.fontSize * 0.5,
-                    marginRight: c.fontSize * 0.2,
-                    opacity: 0.7,
-                    verticalAlign: 'super'
-                  }}
-                >
-                  {verse.verse}
-                </sup>
-              )}
-              {verse.text}
-            </p>
-
-            {(c.showVerseRef || c.showBibleVersion) && (
-              <div
-                style={{
-                  display: 'flex',
-                  gap: refSize * 0.8,
-                  width: '100%',
-                  justifyContent,
-                  alignItems: 'baseline'
-                }}
-              >
-                {c.showVerseRef && (
-                  <p
-                    style={{
-                      ...textBase,
-                      fontSize: refSize,
-                      textAlign: c.textAlign,
-                      color: 'rgba(255,255,255,0.65)',
-                      margin: 0
-                    }}
-                  >
-                    {verse.book} {verse.chapter}:{verse.verse}
-                    {content?.verses && content.verses.length > 1
-                      ? `–${content.verses[content.verses.length - 1].verse}`
-                      : ''}
-                  </p>
-                )}
-
-                {c.showVerseRef && c.showBibleVersion && (
-                  <span
-                    style={{
-                      ...textBase,
-                      fontSize: refSize,
-                      color: 'rgba(255,255,255,0.3)'
-                    }}
-                  >
-                    ·
-                  </span>
-                )}
-
-                {c.showBibleVersion && (
-                  <p
-                    style={{
-                      ...textBase,
-                      fontSize: refSize,
-                      color: 'rgba(255,255,255,0.45)',
-                      fontStyle: 'italic',
-                      margin: 0
-                    }}
-                  >
-                    {abbrev}
-                  </p>
-                )}
-              </div>
-            )}
-          </>
-        ) : (
-          <>
-            {showSceneTitle && content?.title && (
-              <p
-                style={{
-                  ...textBase,
-                  fontSize: c.fontSize * 0.5,
-                  textAlign: c.textAlign,
-                  color: 'rgba(255,255,255,0.6)',
-                  width: '100%',
-                  marginBottom: scene?.subtitle || content?.content ? c.fontSize * 0.3 : 0,
-                  whiteSpace: 'pre-wrap'
-                }}
-              >
-                {content.title}
-              </p>
-            )}
-
-            {scene?.subtitle && (
-              <p
-                style={{
-                  ...textBase,
-                  fontSize: c.fontSize * 0.32,
-                  textAlign: c.textAlign,
-                  color: 'rgba(255,255,255,0.45)',
-                  width: '100%',
-                  marginBottom: content?.content ? c.fontSize * 0.4 : 0,
-                  whiteSpace: 'pre-wrap'
-                }}
-              >
-                {scene.subtitle}
-              </p>
-            )}
-
-            {content?.content && (
-              <p
-                style={{
-                  ...textBase,
-                  fontSize: c.fontSize,
-                  lineHeight: c.lineHeight,
-                  textAlign: c.textAlign,
-                  color: 'white',
-                  width: '100%',
-                  whiteSpace: 'pre-wrap'
-                }}
-              >
-                {content.content}
-              </p>
-            )}
-          </>
+        className={cn(
+          'relative overflow-hidden rounded-lg shrink-0',
+          isLive && content
+            ? 'border-2 border-red-600'
+            : isLive
+              ? 'border-2 border-red-600/30'
+              : content
+                ? 'border-2 border-primary'
+                : 'border-2 border-accent'
         )}
+        style={{ width: canvasW, height: canvasH }}
+      >
+        <div
+          style={{
+            width: REF_W,
+            height: REF_H,
+            ...bgStyle,
+            transform: `scale(${scale})`,
+            transformOrigin: 'top left',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            paddingTop: `${c.marginTop}%`,
+            paddingBottom: `${c.marginBottom}%`,
+            paddingLeft: `${c.marginLeft}%`,
+            paddingRight: `${c.marginRight}%`,
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center'
+          }}
+        >
+          <SlideCanvas
+            content={content}
+            cfg={c}
+            verseIdx={0}
+            isLive={isLive}
+            showPlaceholder={showPlaceholder}
+            availableH={availableH}
+          />
+        </div>
       </div>
     </div>
   )

@@ -27,19 +27,6 @@ export function SongCard({ song, onPreview, onAddToSchedule, onDoubleClick }: So
                 size="icon"
                 variant="ghost"
                 className="h-6 w-6"
-                onClick={e => { e.stopPropagation(); onPreview(song) }}
-              >
-                <Eye className="h-3.5 w-3.5" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>{t('song.preview')}</TooltipContent>
-          </Tooltip>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                size="icon"
-                variant="ghost"
-                className="h-6 w-6"
                 onClick={e => { e.stopPropagation(); onAddToSchedule(song) }}
               >
                 <Plus className="h-3.5 w-3.5" />
