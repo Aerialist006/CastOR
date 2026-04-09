@@ -10,6 +10,7 @@ interface SongGridViewProps {
   onPreview: (song: Song) => void
   onAddToSchedule: (song: Song) => void
   onEdit: (song: Song) => void
+  onDelete: (song: Song) => void
 }
 
 export function SongGridView({
@@ -17,7 +18,8 @@ export function SongGridView({
   search,
   onPreview,
   onAddToSchedule,
-  onEdit
+  onEdit,
+  onDelete
 }: SongGridViewProps) {
   const { t } = useTranslation()
 
@@ -46,6 +48,7 @@ export function SongGridView({
               song={song}
               onPreview={onPreview}
               onAddToSchedule={onAddToSchedule}
+              onDelete={onDelete}
               onDoubleClick={onEdit}
             />
           ))}

@@ -14,6 +14,11 @@ interface Window {
     castWindowClosed: (cb: () => void) => () => void
     castWindowReady: () => void
     onCastWindowReady: (cb: () => void) => () => void
+    getFilePath: (file: File) => string
+    presentations: {
+      import: (filePath: string) => Promise<Presentation>
+      getPdfBuffer: (filePath: string) => Promise<Buffer>
+    }
     songs: {
       getAll: () => Promise<Song[]>
       save: (song: Song) => Promise<Song>

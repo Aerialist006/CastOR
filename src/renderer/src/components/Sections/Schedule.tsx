@@ -12,7 +12,8 @@ import {
   Megaphone,
   Image as ImageIcon,
   Trash2,
-  FolderOpen
+  FolderOpen,
+  MonitorCheck
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -20,22 +21,31 @@ import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from '@/
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { usePresentationContext, type SceneItem, type SceneType } from '@/context/PresentationContext'
 import { SongDetailPanel } from '@/components/Songs/SongDetailPanel'
+import type { Presentation } from '@/types/presentation'
+import { SlideDetailPanel } from '@/components/Slides/SlideDetailPanel'
 import { cn } from '@/utils/utils'
 import type { Song } from '@/types/song'
 
+
 const sceneTypeIcons: Record<SceneType, React.ElementType> = {
   bible: BookOpen,
+  slide: MonitorCheck,
   song: Music,
   note: FileText,
   announcement: Megaphone,
   media: ImageIcon
 }
 
+
 interface ScheduleProps {
   selectedSong?: Song | null
+  selectedPresentation?: Presentation | null
   onSongClose?: () => void
+  onPresentationClose?: () => void
   onSongItemClick?: (item: SceneItem) => void
+  onSlideItemClick?: (item: SceneItem) => void
 }
+
 
 interface ScheduleItemProps {
   item: SceneItem
@@ -49,7 +59,9 @@ interface ScheduleItemProps {
   isDragging: boolean
   dragOverIndex: number | null
   onSongItemClick?: (item: SceneItem) => void
+  onSlideItemClick?: (item: SceneItem) => void
 }
+
 
 function ScheduleItem({
   item,
@@ -62,7 +74,8 @@ function ScheduleItem({
   onDrop,
   isDragging,
   dragOverIndex,
-  onSongItemClick
+  onSongItemClick,
+  onSlideItemClick
 }: ScheduleItemProps) {
   const Icon = sceneTypeIcons[item.type]
   const isDropTarget = dragOverIndex === index
@@ -87,6 +100,7 @@ function ScheduleItem({
       onClick={() => {
         onSelect()
         if (item.type === 'song') onSongItemClick?.(item)
+        else if (item.type === 'media') onSlideItemClick?.(item)
       }}
       className={cn(
         'group flex items-center gap-2 px-2 py-2 rounded-md cursor-pointer transition-all',
@@ -135,7 +149,15 @@ function ScheduleItem({
   )
 }
 
-const Schedule = ({ selectedSong, onSongClose, onSongItemClick }: ScheduleProps) => {
+
+const Schedule = ({
+  selectedSong,
+  selectedPresentation,
+  onSongClose,
+  onPresentationClose,
+  onSongItemClick,
+  onSlideItemClick
+}: ScheduleProps) => {
   const { t } = useTranslation()
   const {
     schedule,
@@ -154,9 +176,14 @@ const Schedule = ({ selectedSong, onSongClose, onSongItemClick }: ScheduleProps)
   const [dragIndex, setDragIndex] = useState<number | null>(null)
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null)
 
+  // Switch to media tab whenever a song or presentation is selected
   useEffect(() => {
     if (selectedSong) setTabValue('media')
   }, [selectedSong])
+
+  useEffect(() => {
+    if (selectedPresentation) setTabValue('media')
+  }, [selectedPresentation])
 
   const handleDragStart = useCallback((index: number) => {
     setDragIndex(index)
@@ -175,6 +202,29 @@ const Schedule = ({ selectedSong, onSongClose, onSongItemClick }: ScheduleProps)
     setDragIndex(null)
     setDragOverIndex(null)
   }, [dragIndex, reorderSchedule])
+
+  // Render the media tab body — song takes priority over presentation
+  const renderMediaContent = () => {
+    if (selectedSong) {
+      return <SongDetailPanel song={selectedSong} onClose={() => onSongClose?.()} />
+    }
+    if (selectedPresentation) {
+      return <SlideDetailPanel presentation={selectedPresentation} onClose={() => onPresentationClose?.()} />
+    }
+    return (
+      <div className="flex-1 flex items-center justify-center">
+        <Empty>
+          <EmptyHeader>
+            <EmptyMedia variant="icon">
+              <Music />
+            </EmptyMedia>
+            <EmptyTitle>{t('dashboard.mediaEmpty')}</EmptyTitle>
+            <EmptyDescription>{t('dashboard.mediaEmptyDesc')}</EmptyDescription>
+          </EmptyHeader>
+        </Empty>
+      </div>
+    )
+  }
 
   return (
     <section className="lg:w-1/5 h-full border-b p-4 shrink-0 flex flex-col gap-3">
@@ -222,6 +272,7 @@ const Schedule = ({ selectedSong, onSongClose, onSongItemClick }: ScheduleProps)
                       isDragging={dragIndex === index}
                       dragOverIndex={dragOverIndex}
                       onSongItemClick={onSongItemClick}
+                      onSlideItemClick={onSlideItemClick}
                     />
                   ))}
                 </div>
@@ -271,25 +322,12 @@ const Schedule = ({ selectedSong, onSongClose, onSongItemClick }: ScheduleProps)
         </TabsContent>
 
         <TabsContent value="media" className="flex-1 flex min-h-0 mt-2">
-          {selectedSong ? (
-            <SongDetailPanel song={selectedSong} onClose={() => onSongClose?.()} />
-          ) : (
-            <div className="flex-1 flex items-center justify-center">
-              <Empty>
-                <EmptyHeader>
-                  <EmptyMedia variant="icon">
-                    <Music />
-                  </EmptyMedia>
-                  <EmptyTitle>{t('dashboard.mediaEmpty')}</EmptyTitle>
-                  <EmptyDescription>{t('dashboard.mediaEmptyDesc')}</EmptyDescription>
-                </EmptyHeader>
-              </Empty>
-            </div>
-          )}
+          {renderMediaContent()}
         </TabsContent>
       </Tabs>
     </section>
   )
 }
+
 
 export default Schedule

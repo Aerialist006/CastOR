@@ -7,6 +7,7 @@ import { registerConfigIpc, setCastWindowGetter } from './ipcConfig'
 import { registerCastIpc, getCastWindow } from './ipcCast'
 import { registerSongsIpc } from './ipcSongs'
 import { registerFoldbackIpc, setFoldbackMainWindowGetter } from './ipcFoldback'
+import { registerSlidesIpc } from './ipcSlides'
 
 // ↓ hoisted so ipcMain handlers can reference it
 let mainWindow: BrowserWindow | null = null
@@ -43,7 +44,6 @@ function createWindow(): void {
   } else {
     mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
   }
-
 }
 
 app.whenReady().then(() => {
@@ -56,6 +56,7 @@ app.whenReady().then(() => {
   registerCastIpc()
   registerSongsIpc()
   registerFoldbackIpc()
+  registerSlidesIpc()
 
   app.on('browser-window-created', (_, window) => {
     optimizer.watchWindowShortcuts(window)

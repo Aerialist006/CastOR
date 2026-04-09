@@ -12,6 +12,11 @@ export interface Api {
       isPrimary: boolean
     }>
   >
+  presentations: {
+    import: (filePath: string) => Promise<Presentation>
+    getPdfBuffer: (filePath: string) => Promise<Buffer>
+  }
+  getFilePath: (file: File) => string
   isCastWindowOpen: () => Promise<boolean>
   toggleCastFullscreen: () => Promise<void>
   openCastWindow: () => void

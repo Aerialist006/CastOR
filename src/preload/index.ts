@@ -1,4 +1,4 @@
-import { contextBridge, ipcRenderer } from 'electron'
+import { contextBridge, ipcRenderer, webUtils } from 'electron'
 
 const api = {
   loadBible: (filename: string) => ipcRenderer.invoke('bible:load', filename),
@@ -10,7 +10,7 @@ const api = {
     ipcRenderer.on('config-update', h)
     return () => ipcRenderer.removeListener('config-update', h)
   },
-
+  getFilePath: (file: File) => webUtils.getPathForFile(file),
   getDisplays: () => ipcRenderer.invoke('cast:get-displays'),
   isCastWindowOpen: () => ipcRenderer.invoke('cast:is-open'),
   toggleCastFullscreen: () => ipcRenderer.invoke('cast:toggle-fullscreen'),
@@ -72,6 +72,10 @@ const api = {
     ipcRenderer.on('foldback-window-ready', handler)
     return () => ipcRenderer.removeListener('foldback-window-ready', handler)
   },
+  presentations: {
+    import: (filePath: string) => ipcRenderer.invoke('presentations:import', filePath),
+    getPdfBuffer: (filePath: string) => ipcRenderer.invoke('presentations:getPdfBuffer', filePath)
+  },
   onFoldbackWindowClosed: (cb) => {
     const handler = () => cb()
     ipcRenderer.on('foldback-window-closed', handler)
@@ -80,4 +84,3 @@ const api = {
 }
 
 contextBridge.exposeInMainWorld('api', api)
-// window.electron not exposed — unused

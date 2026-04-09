@@ -1,12 +1,16 @@
-import Preview from '@/components/Sections/Preview'
+import Preview from '@/components/preview/Preview'
 import Schedule from '@/components/Sections/Schedule'
 import { BiblePanel } from '@/components/Sections/BiblePanel/BiblePanel'
+import { SlidesPanel } from '@/components/Sections/SlidePanel/SlidePanel'
+import { BackgroundPanel } from '@/components/Sections/BackgroundPanel/BackgroundPanel'
 import { useTranslation } from 'react-i18next'
 import { SongModal } from '@/components/Songs/SongModal'
 import { SongGridView } from '@/components/Songs/SongGridView'
 import { SongListView } from '@/components/Songs/SongListView'
 import { useSongs } from '@/hooks/useSongs'
-import { usePresentationContext, generateId, SceneItem } from '@/context/PresentationContext'
+import { usePresentations } from '@/hooks/usePresentation'
+import { usePresentationContext, generateId } from '@/context/PresentationContext'
+import type { SceneItem } from '@/context/PresentationContext'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { ButtonGroup } from '@/components/ui/button-group'
@@ -26,8 +30,8 @@ import {
 } from 'lucide-react'
 import { useState } from 'react'
 import type { Song } from '@/types/song'
+import type { Presentation } from '@/types/presentation'
 import { groupVerses, buildSongGroups } from '@/utils/songParser'
-import { BackgroundPanel } from '@/components/Sections/BackgroundPanel/BackgroundPanel'
 
 const mediaTabs = [
   { value: 'music', icon: Music, labelKey: 'dashboard.song' },
@@ -40,7 +44,13 @@ const mediaTabs = [
 
 const Dashboard = () => {
   const { t } = useTranslation()
-  const { songs, addSong, updateSong } = useSongs()
+
+  // Fix 1: added deleteSong
+  const { songs, addSong, updateSong, deleteSong } = useSongs()
+
+  // Fix 2: replaced importPresentations with addPresentation
+  const { presentations, addPresentation, deletePresentation } = usePresentations()
+
   const { addToSchedule, setPreviewContent } = usePresentationContext()
 
   const [songModalOpen, setSongModalOpen] = useState(false)
@@ -48,6 +58,9 @@ const Dashboard = () => {
   const [view, setView] = useState<'grid' | 'list'>('grid')
   const [search, setSearch] = useState('')
   const [selectedSong, setSelectedSong] = useState<Song | null>(null)
+  const [selectedPresentation, setSelectedPresentation] = useState<Presentation | null>(null)
+
+  // ── Song handlers ────────────────────────────────────────────────────────
 
   const handleSongPreview = (song: Song) => {
     const verses = groupVerses(song.content)
@@ -60,9 +73,10 @@ const Dashboard = () => {
       })
     }
     setSelectedSong(song)
+    setSelectedPresentation(null)
   }
 
-  const handleAddToSchedule = (song: Song) => {
+  const handleAddSongToSchedule = (song: Song) => {
     addToSchedule({
       id: generateId(),
       type: 'song',
@@ -75,17 +89,71 @@ const Dashboard = () => {
     })
   }
 
-  const handleScheduleItemClick = (item: SceneItem) => {
-    if (item.type === 'song' && item.songId) {
-      const song = songs.find((s) => s.id === item.songId)
-      if (song) setSelectedSong(song)
-    }
-  }
-
   const handleEdit = (song: Song) => {
     setEditingSong(song)
     setSongModalOpen(true)
   }
+
+  const handleDeleteSong = (song: Song) => {
+    if (selectedSong?.id === song.id) setSelectedSong(null)
+    deleteSong(song.id)
+  }
+
+  // ── Presentation handlers ────────────────────────────────────────────────
+  const handleImportPresentations = async (files: FileList) => {
+  for (const file of Array.from(files)) {
+    try {
+      const filePath = window.api.getFilePath(file)  // ← replaces file.path
+      const parsed = await window.api.presentations.import(filePath)
+      if (parsed) addPresentation(parsed)
+    } catch (err) {
+      console.error('Failed to import presentation:', file.name, err)
+    }
+  }
+}
+
+  const handleAddPresentationToSchedule = (presentation: Presentation) => {
+    addToSchedule({
+      id: generateId(),
+      type: 'slide',
+      title: presentation.title,
+      presentationId: presentation.id,
+      presentationSlides: presentation.slides,
+      navIndex: 0
+    })
+  }
+
+  const handleOpenPresentation = (presentation: Presentation) => {
+    setSelectedPresentation(presentation)
+    setSelectedSong(null)
+  }
+
+  const handleDeletePresentation = (presentation: Presentation) => {
+    if (selectedPresentation?.id === presentation.id) setSelectedPresentation(null)
+    deletePresentation(presentation.id)
+  }
+
+  // ── Schedule item click handlers ─────────────────────────────────────────
+
+  const handleSongItemClick = (item: SceneItem) => {
+    if (item.type !== 'song' || !item.songId) return
+    const song = songs.find((s) => s.id === item.songId)
+    if (song) {
+      setSelectedSong(song)
+      setSelectedPresentation(null)
+    }
+  }
+
+  const handleSlideItemClick = (item: SceneItem) => {
+    if (item.type !== 'slide' || !item.presentationId) return
+    const presentation = presentations.find((p) => p.id === item.presentationId)
+    if (presentation) {
+      setSelectedPresentation(presentation)
+      setSelectedSong(null)
+    }
+  }
+
+  // ── Render ────────────────────────────────────────────────────────────────
 
   return (
     <div className="flex flex-col w-full h-full text-sm">
@@ -93,8 +161,11 @@ const Dashboard = () => {
         <Preview />
         <Schedule
           selectedSong={selectedSong}
+          selectedPresentation={selectedPresentation}
           onSongClose={() => setSelectedSong(null)}
-          onSongItemClick={handleScheduleItemClick}
+          onPresentationClose={() => setSelectedPresentation(null)}
+          onSongItemClick={handleSongItemClick}
+          onSlideItemClick={handleSlideItemClick}
         />
       </div>
 
@@ -102,6 +173,7 @@ const Dashboard = () => {
         <div className="border-r lg:w-1/3">
           <BiblePanel />
         </div>
+
         <div className="w-full py-2 pr-2 min-w-0">
           <Tabs
             defaultValue="music"
@@ -125,11 +197,11 @@ const Dashboard = () => {
               </TabsList>
             </TooltipProvider>
 
+            {/* ── Music tab ── */}
             <TabsContent
               value="music"
               className="mt-0 w-full p-2 self-stretch flex flex-col gap-2 min-w-0"
             >
-              {/* Toolbar */}
               <div className="flex justify-between items-center gap-2 flex-wrap">
                 <span className="uppercase text-muted-foreground text-xs tracking-wide">
                   {t('dashboard.songHeader')}
@@ -176,13 +248,13 @@ const Dashboard = () => {
                 </div>
               </div>
 
-              {/* View */}
               {view === 'grid' ? (
                 <SongGridView
                   songs={songs}
                   search={search}
                   onPreview={handleSongPreview}
-                  onAddToSchedule={handleAddToSchedule}
+                  onAddToSchedule={handleAddSongToSchedule}
+                  onDelete={handleDeleteSong}
                   onEdit={handleEdit}
                 />
               ) : (
@@ -190,28 +262,49 @@ const Dashboard = () => {
                   songs={songs}
                   search={search}
                   onPreview={handleSongPreview}
-                  onAddToSchedule={handleAddToSchedule}
+                  onAddToSchedule={handleAddSongToSchedule}
+                  onDelete={handleDeleteSong}
                   onEdit={handleEdit}
                 />
               )}
             </TabsContent>
 
-            <TabsContent value="slides" className="mt-0 p-2 self-stretch" />
+            {/* ── Slides tab ── */}
+            <TabsContent
+              value="slides"
+              className="mt-0 w-full p-0 self-stretch flex flex-col gap-2 min-w-0"
+            >
+              <SlidesPanel
+                presentations={presentations}
+                onImport={handleImportPresentations}
+                onAddToSchedule={handleAddPresentationToSchedule}
+                onOpen={handleOpenPresentation}
+                onDelete={handleDeletePresentation}
+              />
+            </TabsContent>
+
+            {/* ── Videos tab ── */}
             <TabsContent value="videos" className="mt-0 p-2 self-stretch" />
+
+            {/* ── Background tab ── */}
             <TabsContent
               value="background"
               className="mt-0 w-full p-2 self-stretch flex flex-col gap-2 min-w-0"
             >
               <BackgroundPanel />
             </TabsContent>
+
+            {/* ── Notes tab ── */}
             <TabsContent value="notes" className="mt-0 p-2 self-stretch" />
+
+            {/* ── Announcements tab ── */}
             <TabsContent value="announcements" className="mt-0 p-2 self-stretch" />
           </Tabs>
         </div>
       </section>
 
       <SongModal
-        key={editingSong?.id ?? 'new'} // ← ADD THIS
+        key={editingSong?.id ?? 'new'}
         open={songModalOpen}
         onClose={() => {
           setSongModalOpen(false)

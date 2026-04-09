@@ -1,4 +1,4 @@
-import React, {
+import {
   createContext,
   useContext,
   useState,
@@ -12,21 +12,38 @@ import { useBibleContext } from './BibleContext'
 import { SongVerseGroup } from '@/types/song'
 import type { FoldbackPayload } from '@/types/foldback'
 
-export type SceneType = 'bible' | 'song' | 'note' | 'announcement' | 'media'
+export type SceneType =
+  | 'bible'
+  | 'song'
+  | 'slide'
+  | 'note'
+  | 'announcement'
+  | 'media'
+
 
 export interface SceneItem {
   id: string
   type: SceneType
   title: string
+  subtitle?: string
   content?: string
+
   verses?: VerseData[]
+
+  navIndex?: number
+  showTitle?: boolean
+
   songId?: string
   songGroups?: SongVerseGroup[]
-  showTitle?: boolean
-  subtitle?: string
-  navIndex?: number
   tone?: string
   originalTone?: string
+
+  presentationId?: string
+  presentationTitle?: string
+  presentationFilePath?: string
+  presentationFileType?: PresentationFileType
+  presentationSlides?: PresentationSlide[]
+  thumbnailUrl?: string
 }
 
 export interface PresentationState {
@@ -283,17 +300,22 @@ export function PresentationProvider({ children }: { children: ReactNode }) {
     window.api?.broadcastLiveContent?.({ content, config: configRef.current })
   }, [])
 
-  const goLive = useCallback(() => {
-    if (!previewContent) return
-    setLiveContent(previewContent)
-    broadcast(previewContent)
+const goLive = useCallback(() => {
+  if (!previewContent) return
 
-    const nextItem = schedule[currentSceneIndex + 1] ?? null
-    broadcastFoldbackContent({
-      current: toFoldbackScene(previewContent),
-      next: toFoldbackScene(nextItem)
-    })
-  }, [previewContent, broadcast, broadcastFoldbackContent, schedule, currentSceneIndex])
+  setLiveContent(previewContent)
+  broadcast(previewContent)
+
+  // Song foldback is managed by Preview/usePreviewSongNav so we don't
+  // overwrite the real current/next slide state with schedule-level guesses.
+  if (previewContent.type === 'song') return
+
+  const nextItem = schedule[currentSceneIndex + 1] ?? null
+  broadcastFoldbackContent({
+    current: toFoldbackScene(previewContent),
+    next: toFoldbackScene(nextItem)
+  })
+}, [previewContent, broadcast, broadcastFoldbackContent, schedule, currentSceneIndex])
 
   const clearLive = useCallback(() => {
     setLiveContent(null)

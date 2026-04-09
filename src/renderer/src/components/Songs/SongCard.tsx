@@ -1,5 +1,5 @@
 import { Song } from '@/types/song'
-import { Eye, Plus } from 'lucide-react'
+import { Trash2, Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { useTranslation } from 'react-i18next'
@@ -8,10 +8,17 @@ interface SongCardProps {
   song: Song
   onPreview: (song: Song) => void
   onAddToSchedule: (song: Song) => void
+  onDelete: (song: Song) => void
   onDoubleClick: (song: Song) => void
 }
 
-export function SongCard({ song, onPreview, onAddToSchedule, onDoubleClick }: SongCardProps) {
+export function SongCard({
+  song,
+  onPreview,
+  onAddToSchedule,
+  onDelete,
+  onDoubleClick
+}: SongCardProps) {
   const { t } = useTranslation()
 
   return (
@@ -26,8 +33,27 @@ export function SongCard({ song, onPreview, onAddToSchedule, onDoubleClick }: So
               <Button
                 size="icon"
                 variant="ghost"
+                className="h-6 w-6 text-destructive hover:text-destructive"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onDelete(song)
+                }}
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>{t('common.delete', 'Delete')}</TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                size="icon"
+                variant="ghost"
                 className="h-6 w-6"
-                onClick={e => { e.stopPropagation(); onAddToSchedule(song) }}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onAddToSchedule(song)
+                }}
               >
                 <Plus className="h-3.5 w-3.5" />
               </Button>
@@ -39,7 +65,9 @@ export function SongCard({ song, onPreview, onAddToSchedule, onDoubleClick }: So
 
       <p className="font-medium text-sm truncate pr-14">{song.title}</p>
       <p className="text-xs text-muted-foreground truncate">{song.author || '—'}</p>
-      <p className="text-xs text-muted-foreground">{song.tone} · {song.bpm} BPM</p>
+      <p className="text-xs text-muted-foreground">
+        {song.tone} · {song.bpm} BPM
+      </p>
     </div>
   )
 }
